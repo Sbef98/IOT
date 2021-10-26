@@ -7,4 +7,4 @@ build_property.PublishSingleFile =
 build_property.IncludeAllContentForSelfExtract = 
 build_property._SupportedPlatformList = Android,iOS,Linux,macOS,Windows
 build_property.RootNamespace = serverHTTP
-build_property.ProjectDir = /home/stefano/Documenti/Università/Magistrale/Primo Semestre/IOT & 3D systems/serverHTTP/
+build_property.ProjectDir = /home/stefano/Documenti/Università/Magistrale/Primo Semestre/IOT & 3D systems/IOT/serverHTTP/
