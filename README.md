@@ -1,2 +1,2 @@
 # IOT
-A led is enough somtimes
+A led is enough sometimes
