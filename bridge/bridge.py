@@ -6,7 +6,7 @@ import requests
 
 class Bridge():
 
-    def setupSerial(self):
+    def setup(self):
 	    # TODO: copied - what do we really need?
         # open serial port
         self.ser = None
@@ -70,7 +70,11 @@ class Bridge():
             val = int.from_bytes(self.inbuffer[i+2], byteorder='little')
             strval = "Sensor %d: %d " % (i, val)
             print(strval)
-            response = requests.post('127.0.0.1:80/addvalue'+ str(val))
-            if (!response.ok):
-            	print("Something went wrong uploading the data. See statuscode " + response.text)
-            
+            response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
+            if (not response.ok):
+            	print("Something went wrong uploading the data. See statuscode " + response.reason)
+
+if __name__ == '__main__':
+    br=Bridge()
+    br.setup()
+    br.loop()            
