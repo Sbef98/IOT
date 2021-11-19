@@ -40,8 +40,8 @@ class Bridge():
         # infinite loop for serial managing
         
         while (True):
-            #print(self.ser)
-            #look for a byte from serial
+            # print(self.ser)
+            # look for a byte from serial
             if self.ser:
                 if self.ser.in_waiting>0:
                     # data available from the serial port
@@ -56,16 +56,15 @@ class Bridge():
                         self.inbuffer.append (lastchar)
 
     def useData(self):
-    	# TODO: see what we really need
         # I have received a line from the serial port. I can use it
         if len(self.inbuffer)<4:   # at least header, flags, new sensor datatype, footer
             return False
         # split parts
-        if self.inbuffer[0] != b'\xff': #first byte
+        if self.inbuffer[0] != b'\xff': # first byte
             return False
 
         flags = int.from_bytes(self.inbuffer[1], byteorder='little')
-        if (flags & (1 << 7) == 128): #check whether first bit of flags is set
+        if (flags & (1 << 7) == 128): # check whether first bit of flags is set
             self.state = "newSensor"
             self.initializeSensor()
         else:
@@ -79,10 +78,11 @@ class Bridge():
         self.ser.write(data)
 
     def addValueForSensor(self):
-        numval = int.from_bytes(self.inbuffer[2], byteorder='little')
-        for i in range (numval):
-            val = int.from_bytes(self.inbuffer[i+2], byteorder='little')
-            strval = "Sensor %d: %d " % (i, val)
+        sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
+        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+        for i in range (datasize):
+            val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
+            strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
             response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
             if (not response.ok):
