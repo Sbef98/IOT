@@ -33,6 +33,7 @@ class Bridge():
 
         # internal input buffer from serial
         self.inbuffer = []
+        self.state = "addValueForSensor"
 
     def loop(self):
     	# TODO: see what we really need
@@ -42,8 +43,6 @@ class Bridge():
             #print(self.ser)
             #look for a byte from serial
             if self.ser:
-                #print("serial is not none")
-
                 if self.ser.in_waiting>0:
                     # data available from the serial port
                     lastchar=self.ser.read(1)
@@ -59,13 +58,28 @@ class Bridge():
     def useData(self):
     	# TODO: see what we really need
         # I have received a line from the serial port. I can use it
-        if len(self.inbuffer)<3:   # at least header, size, footer
+        if len(self.inbuffer)<4:   # at least header, flags, new sensor datatype, footer
             return False
         # split parts
-        if self.inbuffer[0] != b'\xff':
+        if self.inbuffer[0] != b'\xff': #first byte
             return False
 
-        numval = int.from_bytes(self.inbuffer[1], byteorder='little')
+        flags = int.from_bytes(self.inbuffer[1], byteorder='little')
+        if (flags & (1 << 7) == 128): #check whether first bit of flags is set
+            self.state = "newSensor"
+            self.initializeSensor()
+        else:
+            self.state = "addValueForSensor"
+            self.addValueForSensor()
+
+    def initializeSensor(self):
+        data = bytearray(b'\xff')
+        data.append(115) # TODO: think about sensor ids
+        data.append(244) # equals b'\xfe' as stop sign
+        self.ser.write(data)
+
+    def addValueForSensor(self):
+        numval = int.from_bytes(self.inbuffer[2], byteorder='little')
         for i in range (numval):
             val = int.from_bytes(self.inbuffer[i+2], byteorder='little')
             strval = "Sensor %d: %d " % (i, val)
