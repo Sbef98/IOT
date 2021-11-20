@@ -1,0 +1,200 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0xb506003f, pid=7627, tid=10936
+#
+# JRE version: OpenJDK Runtime Environment (11.0.13+8) (build 11.0.13+8-post-Debian-1deb11u1)
+# Java VM: OpenJDK Server VM (11.0.13+8-post-Debian-1deb11u1, mixed mode, sharing, tiered, g1 gc, linux-x86)
+# Problematic frame:
+# C  [libjimage.so+0x203f]
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   https://bugs.debian.org/openjdk-11
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -DAPP_DIR=/usr/share/arduino processing.app.Base /home/stefano/Scrivania/IOT/sensor/arduino_send_data/arduino_send_data.ino
+
+Host: Genuine Intel(R) CPU           T2050  @ 1.60GHz, 2 cores, 2G, Debian GNU/Linux 11 (bullseye)
+Time: Fri Nov 19 23:19:34 2021 CET elapsed time: 4527.183467 seconds (0d 1h 15m 27s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x71486400):  JavaThread "XToolkt-Shutdown-Thread" [_thread_in_vm, id=10936, stack(0x6cf3b000,0x6cf8c000)]
+
+Stack: [0x6cf3b000,0x6cf8c000],  sp=0x6cf8989c,  free space=314k
+Native frames: (J=compiled Java code, A=aot compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [libjimage.so+0x203f]
+C  [libjimage.so+0x2e90]
+C  [libjimage.so+0x33b6]  JIMAGE_FindResource+0xc6
+V  [libjvm.so+0x3f08dc]
+V  [libjvm.so+0x3f2e0e]
+V  [libjvm.so+0xae6c9b]
+V  [libjvm.so+0xae5900]
+V  [libjvm.so+0xae7a83]
+V  [libjvm.so+0x48d400]
+V  [libjvm.so+0x7ec14c]
+V  [libjvm.so+0x7f2c67]
+V  [libjvm.so+0x64a1e9]
+V  [libjvm.so+0x64a849]
+j  sun.awt.X11.XToolkit.lambda$init$0()V+0 java.desktop@11.0.13
+j  sun.awt.X11.XToolkit$$Lambda$28.run()V+4 java.desktop@11.0.13
+j  java.lang.Thread.run()V+11 java.base@11.0.13
+v  ~StubRoutines::call_stub
+V  [libjvm.so+0x650ca0]
+V  [libjvm.so+0x64f363]
+V  [libjvm.so+0x6fb5d0]
+V  [libjvm.so+0xb1c56c]
+V  [libjvm.so+0xb192d3]
+V  [libjvm.so+0x946e01]
+C  [libpthread.so.0+0x80b4]  start_thread+0xe4
+
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  sun.awt.X11.XToolkit.lambda$init$0()V+0 java.desktop@11.0.13
+j  sun.awt.X11.XToolkit$$Lambda$28.run()V+4 java.desktop@11.0.13
+j  java.lang.Thread.run()V+11 java.base@11.0.13
+v  ~StubRoutines::call_stub
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 1 (SEGV_MAPERR), si_addr: 0xb3731d28
+
+Register to memory mapping:
+
+EAX=0xb371601c is an unknown value
+EBX=0x6cf89964 is pointing into the stack for thread: 0x71486400
+ECX=0xb5064d98: <offset 0x00006d98> in /usr/lib/jvm/java-11-openjdk-i386/lib/libjimage.so at 0xb505e000
+EDX=0x00006f43 is an unknown value
+ESP=0x6cf8989c is pointing into the stack for thread: 0x71486400
+EBP=0x6cf898bc is pointing into the stack for thread: 0x71486400
+ESI=0x6cf89965 is pointing into the stack for thread: 0x71486400
+EDI=0xb5065010: <offset 0x00007010> in /usr/lib/jvm/java-11-openjdk-i386/lib/libjimage.so at 0xb505e000
+
+
+Registers:
+EAX=0xb371601c, EBX=0x6cf89964, ECX=0xb5064d98, EDX=0x00006f43
+ESP=0x6cf8989c, EBP=0x6cf898bc, ESI=0x6cf89965, EDI=0xb5065010
+EIP=0xb506003f, EFLAGS=0x00010246, CR2=0x00000000b3731d28
+
+Top of Stack: (sp=0x6cf8989c)
+0x6cf8989c:   61b2dad0 61b2dad0 00004d54 b7c76b70
+0x6cf898ac:   00000010 b4524350 00000000 00007414 
+
+Instructions: (pc=0xb506003f)
+0xb505ff3f:   02 e9 38 ff ff ff 8d 76 00 8a 0e 47 88 4d b4 46
+0xb505ff4f:   88 4f ff 8d 50 ff e9 17 ff ff ff 8d b6 00 00 00
+0xb505ff5f:   00 c7 45 b8 0a 00 00 00 c7 45 bc 00 00 00 00 e9
+0xb505ff6f:   0e fd ff ff 66 90 66 90 66 90 66 90 66 90 66 90
+0xb505ff7f:   90 55 89 e5 53 8b 5d 08 8b 55 0c 8d 4b 01 8a 1b
+0xb505ff8f:   84 db 74 28 89 d0 8d 76 00 89 c2 41 c1 e2 10 01
+0xb505ff9f:   c2 8d 14 50 8d 14 d0 8d 14 d0 8d 14 50 31 c0 88
+0xb505ffaf:   d8 8a 59 ff 31 d0 84 db 75 df 89 c2 89 d0 5b 25
+0xb505ffbf:   ff ff ff 7f 5d c3 90 8d b4 26 00 00 00 00 8d 76
+0xb505ffcf:   00 55 89 e5 57 56 53 83 ec 0c 8b 45 10 8b 5d 0c
+0xb505ffdf:   85 c0 0f 84 c0 00 00 00 8b 45 14 85 c0 0f 84 b5
+0xb505ffef:   00 00 00 8a 0b 8d 73 01 84 c9 0f 84 a1 00 00 00
+0xb505ffff:   89 f7 b8 93 01 00 01 66 90 89 c2 47 c1 e2 10 81
+0xb506000f:   e1 ff 00 00 00 01 c2 8d 14 50 8d 14 d0 8d 14 d0
+0xb506001f:   8d 04 50 31 c8 8a 4f ff 84 c9 75 dd 25 ff ff ff
+0xb506002f:   7f 52 8b 7d 08 52 31 d2 f7 75 14 8b 45 10 8b 0f
+0xb506003f:   8b 04 90 50 57 ff 51 10 83 c4 10 85 c0 7f 12 74
+0xb506004f:   57 83 f0 ff 89 c2 8d 65 f4 89 d0 5b 5e 5f 5d c3
+0xb506005f:   90 8a 1b 89 c1 84 db 74 23 89 c8 46 c1 e0 10 01
+0xb506006f:   c8 8d 04 41 8d 04 c1 8d 04 c1 8d 04 41 31 c9 88
+0xb506007f:   d9 8a 5e ff 31 c1 84 db 75 df 89 c8 25 ff ff ff
+0xb506008f:   7f 31 d2 f7 75 14 8d 65 f4 89 d0 5b 5e 5f 5d c3
+0xb506009f:   90 b8 93 01 00 01 eb 89 83 ca ff eb a9 8d 74 26
+0xb50600af:   00 55 89 e5 53 8b 45 08 8b 4d 0c 8a 10 84 d2 75
+0xb50600bf:   15 eb 19 8d b6 00 00 00 00 38 d3 75 14 8a 50 01
+0xb50600cf:   40 41 84 d2 74 06 8a 19 84 db 75 ed 5b 5d c3 66
+0xb50600df:   90 5b 31 c0 5d c3 90 8d b4 26 00 00 00 00 8d 76
+0xb50600ef:   00 55 89 e5 57 56 53 83 ec 14 8b 4d 0c 85 c9 0f
+0xb50600ff:   84 85 00 00 00 8b 45 0c 8a 00 84 c0 74 7c 8d 76
+0xb506010f:   00 88 c2 88 c3 c0 ea 03 83 e0 07 89 d6 8b 55 0c
+0xb506011f:   81 e6 ff 00 00 00 83 e3 07 8d 44 02 02 89 75 e8
+0xb506012f:   89 45 ec 8d 72 01 88 5d e7 31 c0 31 d2 8d 74 26 
+
+
+Stack slot to memory mapping:
+stack at sp + 0 slots: 0x61b2dad0 is an unknown value
+stack at sp + 1 slots: 0x61b2dad0 is an unknown value
+stack at sp + 2 slots: 0x00004d54 is an unknown value
+stack at sp + 3 slots: 0xb7c76b70: <offset 0x00e7cb70> in /usr/lib/jvm/java-11-openjdk-i386/lib/server/libjvm.so at 0xb6dfa000
+stack at sp + 4 slots: 0x00000010 is an unknown value
+stack at sp + 5 slots: 0xb4524350 points into unknown readable memory: 0x71480658 | 58 06 48 71
+stack at sp + 6 slots: 0x0 is NULL
+stack at sp + 7 slots: 0x00007414 is an unknown value
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x719ef3e0, length=31, elements={
+0x7316b000, 0x7316c800, 0x73170000, 0x73171800,
+0x73173000, 0x73174c00, 0x73176400, 0x731e8400,
+0x71479c00, 0x7147d800, 0xb591e000, 0x00c58c00,
+0x0094bc00, 0x00992800, 0x00995800, 0x0099b000,
+0x0099cc00, 0x009a0800, 0x71983000, 0x6c85e800,
+0x6c85fc00, 0x6d419000, 0xb4519000, 0x6bc16800,
+0xb4f7b400, 0xb4f7bc00, 0x714a2800, 0x70343800,
+0x71486400, 0x71481400, 0x714a3000
+}
+
+Java Threads: ( => current thread )
+  0x7316b000 JavaThread "Reference Handler" daemon [_thread_blocked, id=7639, stack(0x7321b000,0x7326c000)]
+  0x7316c800 JavaThread "Finalizer" daemon [_thread_blocked, id=7640, stack(0x71ddd000,0x71e2e000)]
+  0x73170000 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=7641, stack(0x71d8c000,0x71ddd000)]
+  0x73171800 JavaThread "Service Thread" daemon [_thread_blocked, id=7642, stack(0x71d3b000,0x71d8c000)]
+  0x73173000 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=7643, stack(0x71cba000,0x71d3b000)]
+  0x73174c00 JavaThread "C1 CompilerThread0" daemon [_thread_blocked, id=7644, stack(0x71c39000,0x71cba000)]
+  0x73176400 JavaThread "Sweeper thread" daemon [_thread_blocked, id=7645, stack(0x71be8000,0x71c39000)]
+  0x731e8400 JavaThread "Common-Cleaner" daemon [_thread_blocked, id=7647, stack(0x71b15000,0x71b66000)]
+  0x71479c00 JavaThread "Java2D Disposer" daemon [_thread_blocked, id=7653, stack(0x7157f000,0x71600000)]
+  0x7147d800 JavaThread "AWT-XAWT" daemon [_thread_in_native, id=7654, stack(0x7150b000,0x7155c000)]
+  0xb591e000 JavaThread "cc.arduino.packages.discoverers.serial.SerialDiscovery" [_thread_blocked, id=7666, stack(0x6ecaf000,0x6ed00000)]
+  0x00c58c00 JavaThread "Multihomed mDNS.Timer" daemon [_thread_blocked, id=7667, stack(0x6eb15000,0x6eb66000)]
+  0x0094bc00 JavaThread "SocketListener(q4os-desktop-home.local.)" daemon [_thread_blocked, id=7669, stack(0x710f9000,0x7117a000)]
+  0x00992800 JavaThread "JmDNS(q4os-desktop-home.local.).Timer" daemon [_thread_blocked, id=7670, stack(0x6d3af000,0x6d400000)]
+  0x00995800 JavaThread "JmDNS(q4os-desktop-home.local.).State.Timer" [_thread_blocked, id=7671, stack(0x6d35e000,0x6d3af000)]
+  0x0099b000 JavaThread "SocketListener(fe80-0-0-0-71f-d327-6426-ff91-wlp4s0.local.)" daemon [_thread_blocked, id=7673, stack(0x6d1af000,0x6d200000)]
+  0x0099cc00 JavaThread "JmDNS(fe80-0-0-0-71f-d327-6426-ff91-wlp4s0.local.).Timer" daemon [_thread_blocked, id=7674, stack(0x6d15e000,0x6d1af000)]
+  0x009a0800 JavaThread "JmDNS(fe80-0-0-0-71f-d327-6426-ff91-wlp4s0.local.).State.Timer" [_thread_blocked, id=7675, stack(0x6d10d000,0x6d15e000)]
+  0x71983000 JavaThread "Batik CleanerThread" daemon [_thread_blocked, id=7679, stack(0x6daaf000,0x6db00000)]
+  0x6c85e800 JavaThread "AWT-Shutdown" [_thread_blocked, id=7682, stack(0x6cb06000,0x6cb57000)]
+  0x6c85fc00 JavaThread "AWT-EventQueue-0" [_thread_blocked, id=7683, stack(0x6c6f6000,0x6c747000)]
+  0x6d419000 JavaThread "TimerQueue" daemon [_thread_blocked, id=7686, stack(0x6cb94000,0x6cbe5000)]
+  0xb4519000 JavaThread "DestroyJavaVM" [_thread_blocked, id=7632, stack(0xb50ae000,0xb50ff000)]
+  0x6bc16800 JavaThread "SIGTERM handler" daemon [_thread_blocked, id=10746, stack(0x6c4a5000,0x6c4f6000)]
+  0xb4f7b400 JavaThread "SIGTERM handler" daemon [_thread_blocked, id=10907, stack(0x6c7af000,0x6c800000)]
+  0xb4f7bc00 JavaThread "SIGTERM handler" daemon [_thread_blocked, id=10930, stack(0x6c0af000,0x6c100000)]
+  0x714a2800 JavaThread "Logging-Cleaner" [_thread_blocked, id=10934, stack(0x6d30d000,0x6d35e000)]
+  0x70343800 JavaThread "DeleteFilesOnShutdown" [_thread_blocked, id=10935, stack(0x6c75e000,0x6c7af000)]
+=>0x71486400 JavaThread "XToolkt-Shutdown-Thread" [_thread_in_vm, id=10936, stack(0x6cf3b000,0x6cf8c000)]
+  0x71481400 JavaThread "pool-1-thread-1" [_thread_blocked, id=10937, stack(0x6d08c000,0x6d10d000)]
+  0x714a3000 JavaThread "DiscoveryManager closeHook" [_thread_blocked, id=10939, stack(0xb3833000,0xb3884000)]
+
+Other Threads:
+  0x73169400 VMThread "VM Thread" [stack: 0x73080000,0x73100000] [id=7638]
+  0x731e5400 WatcherThread [stack: 0x71b68000,0x71be8000] [id=7646]
+  0xb452dc00 GCTaskThread "GC Thread#0" [stack: 0xa44c0000,0xa4540000] [id=7633]
+  0xb5901000 GCTaskThread "GC Thread#1" [stack: 0x71780000,0x71800000] [id=7648]
+  0xb455e000 ConcurrentGCThread "G1 Main Marker" [stack: 0xa443e000,0xa44be000] [id=7634]
+  0xb455f800 ConcurrentGCThread "G1 Conc#0" [stack: 0x73372000,0x733f2000] [id=7635]
+  0xb459b800 ConcurrentGCThread "G1 Refine#0" [stack: 0x732f0000,0x73370000] [id=7636]
+  0x6d23cc00 ConcurrentGCThread "G1 Refine#1" [stack: 0x6d92f000,0x6d9af000] [id=7668]
+  0xb459d000 ConcurrentGCThread "G1 Young RemSet Sampling" [stack: 0x7326e000,0x732ee000] [id=7637]
+
+Threads with active compile tasks:
+C1 CompilerThread04528786 5950       3       java.util.logging.LogManager::checkPermission (16 bytes)
+
+VM state:synchronizing (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0xb4517260] Threads_lock - owner thread: 0x73169400
+
+Heap:
+ garbage-first heap   total 146432K, used 76526K [0x75000000, 0xa4400000)
+  region size 1024K, 22 young (22528K), 1 survivors (1024K)
+ Metaspace       used 28638K, capacity 28882K, committed 29464K, reserved 30000K
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, A=archive, TAMS=top-at-mark-start (previous, next)

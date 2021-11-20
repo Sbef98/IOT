@@ -2,6 +2,7 @@
 #define PROTOCOL_H
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+
 //////////////// STATES MANAGEMENTE ////////////////////////
 // So this is basically the states for reading any message through our protocol
 enum Reading_states{
@@ -20,7 +21,7 @@ enum Sensor_state{
 };
 
 // This is the states that our arduino communication can be set to
-enum Arduino_states{
+enum Arduino_Message_Buffer_states{
   idling, // when we can get an input
   initializing, // WHen reading input data from serial to initialize a sensors
 };
@@ -32,10 +33,11 @@ enum Flags {
 
 // [FF] [Flags] [Sensor ID] [Data size] [Data] [FE]
 struct Message {
-  enum Flags flags;
+  char flags;
   char sensor_id;
   char data_size;
   char* data;
+  char data_read;
 };
 
 extern void send_message(struct Message* m);
