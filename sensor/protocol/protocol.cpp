@@ -53,8 +53,11 @@ char read_input(struct Message* m, enum Reading_states* f_m_state)
       if(m->data_read == m->data_size)
         *f_m_state = message_end;
     }
-    if(*f_m_state == message_end){
-      
+    if(*f_m_state == message_end && input == 0xfe){
+      *f_m_state = message_begin;
+      if(m->data_read != m->data_size)
+        return -1;
+      return 0;
     }
   }
 }

@@ -36,10 +36,11 @@ struct Message {
   char flags;
   char sensor_id;
   char data_size;
-  char* data;
+  char data[256];
   char data_read;
 };
 
 extern void send_message(struct Message* m);
+extern char read_input(struct Message* m, enum Reading_states* f_m_state);
 
 #endif // !PROTOCOL_H
