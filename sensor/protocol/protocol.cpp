@@ -55,8 +55,8 @@ unsigned char read_input(struct Message* m)
       if(data_read == m->data_size)
         f_m_state = message_end;
     }
-    if(*f_m_state == message_end && input == 0xfe){
-      *f_m_state = message_begin;
+    if(f_m_state == message_end && input == 0xfe){
+      f_m_state = message_begin;
       if(data_read != m->data_size)
         return message_discarded;
       return message_done;
