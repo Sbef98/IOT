@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <string.h>
+#include <stdio.h>
 
 #define pass ;
 

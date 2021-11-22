@@ -148,3 +148,5 @@ void sensor(int (*data_collector) (char* data_buffer),
     send_message(&message_in_buffer);    
   }
 }
+
+//void mc_loop(int (*data_collector) (char* data_buffer))

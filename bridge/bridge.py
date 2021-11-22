@@ -79,8 +79,11 @@ class Bridge():
 
     def addValueForSensor(self):
         sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
-        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+        datasize = int.from_bytes(self.inbuffer[3], byteorder='little') - 1
         for i in range (datasize):
+            print(len(self.inbuffer))
+            print("datasize:",datasize)
+            print("i:",i)
             val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
