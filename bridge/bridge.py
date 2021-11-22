@@ -17,7 +17,7 @@ class Bridge():
         for port in ports:
             print (port.device)
             print (port.description)
-            if 'com4' in port.description.lower():
+            if 'seeeduino' in port.description.lower():
                 self.portname = port.device
                 print ("connecting to " + self.portname)
         try:
@@ -84,9 +84,9 @@ class Bridge():
             val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
-            response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
-            if (not response.ok):
-            	print("Something went wrong uploading the data. See statuscode " + response.reason)
+#            response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
+#            if (not response.ok):
+#            	print("Something went wrong uploading the data. See statuscode " + response.reason)
 
 if __name__ == '__main__':
     br=Bridge()
