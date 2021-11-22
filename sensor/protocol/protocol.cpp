@@ -41,7 +41,7 @@ unsigned char read_input(struct Message* m)
       m->flags = input;
       f_m_state = sensor_id_read;
     }
-    iff_m_state == sensor_id_read){
+    if(f_m_state == sensor_id_read){
       m->sensor_id = input;
       f_m_state = data_size_read;
     }
@@ -70,8 +70,8 @@ unsigned char read_input(struct Message* m)
  */
 void sensor_start_initialization(char* data_type)
 {
-  struct message m = {m_init_flag, 0, (unsigned char) strlen(data_type), data_type, 0};
-  send_message(&message);
+  struct Message m = {m_init_flag, 0, (unsigned char) strlen(data_type), data_type};
+  send_message(&m);
 }
 /*
  * Why am i making such a tiny an simple and almost useless function?
@@ -79,7 +79,7 @@ void sensor_start_initialization(char* data_type)
  */
 void sensor_initialization(struct Message* m, unsigned char* sensor_id_to_set)
 {
-  sensor_id_to_set = m->sensor_id;
+  *sensor_id_to_set = m->sensor_id;
 }
 
 /*
@@ -98,7 +98,7 @@ void sensor_initialization(struct Message* m, unsigned char* sensor_id_to_set)
  */
 void sensor(int (*data_collector) (char* data_buffer),
             enum Arduino_Message_Buffer_states* mc_state, 
-            char* data_type, 
+            char* data_type
             )
 {
   // void setup():
@@ -109,29 +109,29 @@ void sensor(int (*data_collector) (char* data_buffer),
   static enum Sensor_state sensor_state = not_initialized;    
   static unsigned char sensor_id = 0;
   static char local_message_buffer[254]; // This is used both for output and input, since i won't use both at th same time
-  static struct Message message_in_buffer = {0 , 0, message_buffer, 0};
+  static struct Message message_in_buffer = {0 , m_no_flags_flag, 0, local_message_buffer};
 
-  if(sensor_state == not_initialized && *mc_state == idle){
-    *mc_state = initializing;
+  if(sensor_state == not_initialized && *mc_state == idling){
+    *mc_state = initializing_sensor;
     sensor_start_initialization(data_type);
     sensor_state = initializing;
   }
-  if(sensor_state == initializing && read_input(&message_in_buffer) = 1){
-    *mc_state = idle;
-    sensor_initialization(message_in_buffer);
+  if(sensor_state == initializing && read_input(&message_in_buffer) == 1){
+    *mc_state = idling;
+    sensor_initialization(&message_in_buffer, &sensor_id); // Passing the sensor_id it's not foundamental, but ehy it's ok
     sensor_state = initialized;
   }
-  if(sensor_state == initializing && read_input(&message_in_buffer) = 0){
+  if(sensor_state == initializing && read_input(&message_in_buffer) == 0){
     pass; // basically do nothing, i should write sensor_state == initializing to be standard compliant but no i won't write anything.
   }
-  if(sensor_state == initializing && read_input(&message_in_buffer) = -1){
+  if(sensor_state == initializing && read_input(&message_in_buffer) == -1){
     /*
      * Basically, the intialization went not so ok. In this case, i go back to the state 
      * of not initialized and let any other sensor that needs to use the read input buffer
      * read its own stuff and its own stuff.
      */
     sensor_state = not_initialized;
-    *mc_state = idle;
+    *mc_state = idling;
   }
   /*
    * If everything its ok (the mc is not busy in some activity with
@@ -139,7 +139,7 @@ void sensor(int (*data_collector) (char* data_buffer),
    * I do can read the stuff i need to read and go on with my boring life of sensor
    * sending stuff to the bridge.
    */
-  if(sensor_state == initialized && *mc_state = idle){
+  if(sensor_state == initialized && *mc_state == idling){
     message_in_buffer.data_size = data_collector(local_message_buffer);
     message_in_buffer.data = local_message_buffer;
     // I do not need to setup the message ID because it'll be mine for sure

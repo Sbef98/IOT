@@ -14,7 +14,6 @@ void loop() {
   m.sensor_id = 0;
   m.data_size = 1;
   m.data[0] = 1;
-  m.data_read = 1;
   enum Reading_states f_m_state = message_begin;
   send_message(&m);
 }

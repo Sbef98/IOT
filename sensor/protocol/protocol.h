@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 #include <string.h>
 
-#define pass; ;
+#define pass ;
 
 //////////////// STATES MANAGEMENT ////////////////////////
 // So this is basically the states for reading any message through our protocol
@@ -27,13 +27,13 @@ enum Sensor_state{
 // This is the states that our arduino communication can be set to
 enum Arduino_Message_Buffer_states{
   idling, // when we can get an input
-  initializing, // WHen reading input data from serial to initialize a sensors
+  initializing_sensor, // WHen reading input data from serial to initialize a sensors
 };
 
 ///////////////////////// MESSAGE STRCTURE ////////////////////////
-//enum Flags {
-#define m_init_flag 0b00000001; // Sensor Initialization Message (message initialization => m_init)
-#define m_no_flags_flag = 0b00000000;
+
+#define m_init_flag 0b00000001 // Sensor Initialization Message (message initialization => m_init)
+#define m_no_flags_flag 0b00000000
 //};
 
 // [FF] [Flags] [Sensor ID] [Data size] [Data] [FE]
@@ -41,7 +41,7 @@ struct Message {
   unsigned char flags;
   unsigned char sensor_id;
   unsigned char data_size;
-  unsigned char* data;
+  char* data;
   //unsigned char data_read;
 };
 
@@ -56,7 +56,7 @@ extern void sensor_start_initialization(char* data_type);
 extern void sensor_initialization(struct Message* m, unsigned char* sensor_id_to_set);
 extern void sensor(int (*data_collector) (char* data_buffer),
             enum Arduino_Message_Buffer_states* mc_state, 
-            char* data_type, 
+            char* data_type
             );
 
 #endif // !PROTOCOL_H
