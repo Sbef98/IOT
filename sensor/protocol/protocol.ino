@@ -4,7 +4,7 @@
 
 void setup() {
   // put your setup code here, to run once:
-
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -13,7 +13,9 @@ void loop() {
   m.flags = 0;
   m.sensor_id = 0;
   m.data_size = 1;
-  m.data[0] = 1;
+  m.data[0] = 'c';
   enum Reading_states f_m_state = message_begin;
   send_message(&m);
+  Serial.println("");
+  delay(100);
 }
