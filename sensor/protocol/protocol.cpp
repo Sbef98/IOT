@@ -9,6 +9,7 @@ void send_message(struct Message* m)
   for(char i = 0; i < m -> data_size; i++){
     Serial.write(m->data[i]);
   }
+  Serial.write(0xfe);
 }
 
 /*

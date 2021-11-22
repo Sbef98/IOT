@@ -16,6 +16,5 @@ void loop() {
   m.data[0] = 'c';
   enum Reading_states f_m_state = message_begin;
   send_message(&m);
-  Serial.println("");
   delay(100);
 }
