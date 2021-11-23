@@ -88,10 +88,12 @@ class Bridge():
             currentData.addValue(val)
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
-            data_json = currentData.getJSON()
-            response = requests.post('http://155.185.73.84:80/addvalue', json=data_json)
-            if (not response.ok):
-            	print("Something went wrong uploading the data. See statuscode " + response.reason)
+        
+        # send the read data as json to the cloud
+        data_json = currentData.getJSON()
+        response = requests.post('http://155.185.73.84:80/addvalue', json=data_json)
+        if (not response.ok):
+            print("Something went wrong uploading the data. See statuscode " + response.reason)
 
 if __name__ == '__main__':
     br=Bridge()
