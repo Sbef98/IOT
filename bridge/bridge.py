@@ -79,21 +79,19 @@ class Bridge():
 
     def addValueForSensor(self):
         sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
-        currentData = Data(sensorID)
+        currentData = DataSet(sensorID)
 
         datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
 
         for i in range (datasize):
-            print(len(self.inbuffer))
-            print("datasize:",datasize)
-            print("i:",i)
             val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
             currentData.addValue(val)
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
-#            response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
-#            if (not response.ok):
-#            	print("Something went wrong uploading the data. See statuscode " + response.reason)
+            data_json = currentData.getJSON()
+            response = requests.post('http://155.185.73.84:80/addvalue', json=data_json)
+            if (not response.ok):
+            	print("Something went wrong uploading the data. See statuscode " + response.reason)
 
 if __name__ == '__main__':
     br=Bridge()
