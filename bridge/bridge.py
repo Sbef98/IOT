@@ -3,17 +3,19 @@ import serial.tools.list_ports
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
+from data import Data
 
 class Bridge():
 
     def setup(self):
-	    # TODO: copied - what do we really need?
         # open serial port
         self.ser = None
         print("list of available ports: ")
 
         ports = serial.tools.list_ports.comports()
         self.portname=None
+        
+        # finding correct serial port and connecting
         for port in ports:
             print (port.device)
             print (port.description)
@@ -28,8 +30,6 @@ class Bridge():
                 print("self.ser:" + self.ser.name)
         except:
             self.ser = None
-
-        # self.ser.open()
 
         # internal input buffer from serial
         self.inbuffer = []
@@ -79,12 +79,16 @@ class Bridge():
 
     def addValueForSensor(self):
         sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
-        datasize = int.from_bytes(self.inbuffer[3], byteorder='little') - 1
+        currentData = Data(sensorID)
+
+        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+
         for i in range (datasize):
             print(len(self.inbuffer))
             print("datasize:",datasize)
             print("i:",i)
             val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
+            currentData.addValue(val)
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
 #            response = requests.post('http://155.185.73.84:80/addvalue/'+ str(val))
