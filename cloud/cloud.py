@@ -14,14 +14,17 @@ app.config.from_object(myconfig)
 # db creation
 db = SQLAlchemy(app)
 
-# TODO: what do we need this for?
 class Sensorfeed(db.Model):
-    id = db.Column('student_id', db.Integer, primary_key = True)
+    id = db.Column('sensorid', db.Integer, primary_key = True)
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
 
-    def __init__(self, value):
+    def __init__(self, sensorid, value):
         self.value = value
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
 
 @app.errorhandler(404)
 def page_not_found(error):
@@ -34,14 +37,21 @@ def testoHTML():
     else:
         return '<h1>I love IoT</h1>'
 
-@app.route('/addvalue/<val>', methods=['POST'])
-def addinlista(val):
-    sf = Sensorfeed(val)
+@app.route('/addvalue', methods=['POST'])
+def addinlist():
+    json_data = request.get_json()
 
-    db.session.add(sf)
-    db.session.commit()
-    print("added value: ", val)
-    return str(sf.id)
+    sensorid = json_data['sensorid']
+    datasize = int(json_data['datasize'])
+    data_list = json_data['data']
+
+    for i in range(datasize):
+        print(i)
+        sf = Sensorfeed(sensorid, data_list[i])
+        sf.addToDatabase()
+        print("added value: ", data_list[i], "for sensor:", sensorid)
+        
+    return str(0) # function must return something that is not an integer
 
 if __name__ == '__main__':
 
