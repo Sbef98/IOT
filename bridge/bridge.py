@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import serial
 import serial.tools.list_ports
 # to see why I used requests and not urllib.request:
