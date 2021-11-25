@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 
-import serial
-import serial.tools.list_ports
+from data import DataSet
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
-from data import Data
+import serial
+import serial.tools.list_ports
+from sys import platform
 
 class Bridge():
 
     def setup(self):
         # open serial port
         self.ser = None
-        print("list of available ports: ")
+        print('list of available ports: ')
 
         ports = serial.tools.list_ports.comports()
         self.portname=None
@@ -21,9 +22,10 @@ class Bridge():
         for port in ports:
             print (port.device)
             print (port.description)
-            if 'seeeduino' in port.description.lower():
+            if (platform == 'linux' and 'seeeduino' in port.description.lower()) or (platform == 'win32' and 'com4' in port.description.lower()):
                 self.portname = port.device
                 print ("connecting to " + self.portname)
+                break
         try:
             if self.portname:
                 print("Portname:" + self.portname)
@@ -32,13 +34,13 @@ class Bridge():
                 print("self.ser:" + self.ser.name)
         except:
             self.ser = None
+            print("not connected")
 
         # internal input buffer from serial
         self.inbuffer = []
         self.state = "addValueForSensor"
 
     def loop(self):
-    	# TODO: see what we really need
         # infinite loop for serial managing
         
         while (True):
@@ -49,7 +51,7 @@ class Bridge():
                     # data available from the serial port
                     lastchar=self.ser.read(1)
 
-                    if lastchar==b'\xfe': #EOL
+                    if lastchar==b'\xfe' or len(self.inbuffer) > 250: #EOL
                         print("\nValue received")
                         self.useData()
                         self.inbuffer =[]
@@ -60,10 +62,14 @@ class Bridge():
     def useData(self):
         # I have received a line from the serial port. I can use it
         if len(self.inbuffer)<4:   # at least header, flags, new sensor datatype, footer
+            print("Warning: not enough bytes")
             return False
         # split parts
         if self.inbuffer[0] != b'\xff': # first byte
+            print("Warning: start is incorrect")
             return False
+
+        print("reading flags")
 
         flags = int.from_bytes(self.inbuffer[1], byteorder='little')
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
@@ -90,10 +96,10 @@ class Bridge():
             currentData.addValue(val)
             strval = "Sensor %d: %d " % (sensorID, val)
             print(strval)
-        
+
         # send the read data as json to the cloud
         data_json = currentData.getJSON()
-        response = requests.post('http://155.185.73.84:80/addvalue', json=data_json)
+        response = requests.post('http://0.0.0.0:80/addvalue', json=data_json)
         if (not response.ok):
             print("Something went wrong uploading the data. See statuscode " + response.reason)
 
