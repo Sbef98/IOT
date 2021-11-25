@@ -6,11 +6,11 @@ from flask import render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-appname = "IOT - sample1"
+appname = "Shopmaker"
 app = Flask(appname)
 myconfig = Config
 # TODO: check why the url on which we are running is not 127.0.0.1
-# TODO: change appname, database name
+# TODO: change database name
 app.config.from_object(myconfig)
 
 # db creation

@@ -1,4 +1,3 @@
-import json
 
 class DataSet():
 	def __init__(self, sensorid):
@@ -12,8 +11,9 @@ class DataSet():
 		self.data.append(value)
 
 	def getJSON(self):
-		return json.dumps({
-			'sensorid' : self.sensorid,
-			'datasize' : self.datasize,
-			'data' : self.data
-			})
+		# creating json like data
+		data = {}
+		data['sensorid'] = str(self.sensorid)
+		data['datasize'] = str(self.datasize())
+		data['data'] = [str(datapoint) for datapoint in self.data]
+		return data
