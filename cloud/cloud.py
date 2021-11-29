@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from flask import Flask
 from config import Config
+from flask import Flask
 from flask import render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -10,7 +10,6 @@ appname = "Shopmaker"
 app = Flask(appname)
 myconfig = Config
 # TODO: check why the url on which we are running is not 127.0.0.1
-# TODO: change database name
 app.config.from_object(myconfig)
 
 # db creation
@@ -33,11 +32,8 @@ def page_not_found(error):
     return 'Error', 404
 
 @app.route('/')
-def testoHTML():
-    if request.accept_mimetypes['application/json']:
-        return jsonify( {'text':'I Love IoT'}), '200 OK'
-    else:
-        return '<h1>I love IoT</h1>'
+def test():
+    return render_template('index.html')
 
 @app.route('/addvalue', methods=['POST'])
 def addinlist():
@@ -62,4 +58,4 @@ if __name__ == '__main__':
 
     port = 80
     interface = '0.0.0.0'
-    app.run(host=interface,port=port)
+    app.run(host=interface,port=port, debug=True)

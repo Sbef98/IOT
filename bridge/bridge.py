@@ -76,7 +76,7 @@ class Bridge():
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
             self.state = "newSensor"
             self.initializeSensor()
-        elif (flags & (1 << 6) == 64):
+        elif (flags & (1 << 6) == 64): # check whether second bit of flags is set
             self.state = "debugMode"
             print("Debug message")
         else:

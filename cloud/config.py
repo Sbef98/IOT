@@ -12,7 +12,7 @@ class Config:
     APPLICATION_ROOT = '/'
 
     FLASK_APP = 'app.py'
-    FLASK_RUN_HOST = '0.0.0.0'
+    FLASK_RUN_HOST = 'localhost'
     FLASK_RUN_PORT = 80
 
     FLASK_DEBUG = 0
@@ -29,7 +29,7 @@ class Config:
 
     # Database
 
-    SQLALCHEMY_DATABASE_URI = "sqlite:///example.sqlite"  # = 'mysql://username:password@localhost/db_name'
+    SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"  # = 'mysql://username:password@localhost/db_name'
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
