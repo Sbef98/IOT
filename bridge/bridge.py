@@ -7,6 +7,7 @@ import requests
 import serial
 import serial.tools.list_ports
 from sys import platform
+import warnings
 
 class Bridge():
 
@@ -36,7 +37,7 @@ class Bridge():
             self.ser = None
             print("not connected")
 
-        # internal input buffer from serial
+        # internal input buffer for serial
         self.inbuffer = []
         self.state = "addValueForSensor"
 
@@ -62,11 +63,11 @@ class Bridge():
     def useData(self):
         # I have received a line from the serial port. I can use it
         if len(self.inbuffer)<4:   # at least header, flags, new sensor datatype, footer
-            print("Warning: not enough bytes")
+            warning.warn("Message has is shorter than minimum size")
             return False
         # split parts
         if self.inbuffer[0] != b'\xff': # first byte
-            print("Warning: start is incorrect")
+            warning.warn("Start of sent data is incorrect")
             return False
 
         print("reading flags")
@@ -75,6 +76,9 @@ class Bridge():
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
             self.state = "newSensor"
             self.initializeSensor()
+        elif (flags & (1 << 6) == 64):
+            self.state = "debugMode"
+            print("Debug message")
         else:
             self.state = "addValueForSensor"
             self.addValueForSensor()
