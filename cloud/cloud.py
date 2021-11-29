@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from config import Config
+from datetime import datetime
 from flask import Flask
 from flask import render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
 
 appname = "Shopmaker"
 app = Flask(appname)
@@ -15,13 +15,23 @@ app.config.from_object(myconfig)
 # db creation
 db = SQLAlchemy(app)
 
+class Sensor(db.Model):
+    __tablename__ = 'sensor'
+    id = db.Column('id', db.Integer, primary_key = True)
+    datatype = db.Column(db.String(100), nullable = False)
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Sensorfeed(db.Model):
-    id = db.Column('sensorid', db.Integer, primary_key = True)
+    __tablename__ = 'sensorfeed'
+    id = db.Column('feedid', db.Integer, primary_key = True)
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
-
-    def __init__(self, sensorid, value):
-        self.value = value
+    sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
+    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id'), 
+        foreign_keys = [sensor_id], lazy = True)
 
     def addToDatabase(self):
         db.session.add(self)
@@ -33,23 +43,38 @@ def page_not_found(error):
 
 @app.route('/')
 def test():
-    return render_template('index.html')
+    # add initial sensor
+    sensor = Sensor(datatype = "integer")
+    db.session.add(sensor)   
+    db.session.commit()
+    return str(sensor.id)
 
 @app.route('/addvalue', methods=['POST'])
 def addinlist():
     json_data = request.get_json()
 
-    sensorid = json_data['sensorid']
+    sensorid = int(json_data['sensorid'])
+    # sensor = Sensor.query.get(sensorid)
+    sensor = Sensor.query.get(1)
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
 
     for i in range(datasize):
         print(i)
-        sf = Sensorfeed(sensorid, data_list[i])
+        sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
         sf.addToDatabase()
         print("added value: ", data_list[i], "for sensor:", sensorid)
-        
+
     return str(0) # function must return something that is not an integer
+
+@app.route('/addsensor', methods=['POST'])
+def addSensor():
+    json_data = request.get_json()
+
+    sensor = Sensor(datatype=json_data['datatype'])
+    sensor.addToDatabase()
+
+    return str(sensor.id)
 
 if __name__ == '__main__':
 
