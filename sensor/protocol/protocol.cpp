@@ -7,15 +7,26 @@ void send_message(struct Message* m)
   Serial.write(m->sensor_id);
   Serial.write(m->data_size);
   for(char i = 0; i < m -> data_size; i++){
-    Serial.write(m->data[i]);
+    Serial.write(((char*) m->data)[i]);
   }
   Serial.write(0xfe);
 }
 
+void send_debug_string(char* debug_string){
+  struct Message m = new_string_debug_message(debug_string);
+  send_message(&m);
+}
+
+void send_debug_message(struct Message* m){
+  m->flags = m->flags & m_debug_flag;     //Just adding the debug flag coz so
+  send_message(m);
+}
+
+
 /*
  *  I just noticed this function is not fully "state programming" compliant. Gotta fix some ifs later.
  */
-unsigned char read_input(struct Message* m)
+char read_input(struct Message* m)
 {
   static enum Reading_states f_m_state = message_begin;
   static unsigned char data_read = 0;
@@ -52,7 +63,7 @@ unsigned char read_input(struct Message* m)
       data_read = 0;
     }
     if(f_m_state == data_reading){
-      m->data[data_read++] = input; // NOTICE: post-incremente -> https://www.geeksforgeeks.org/pre-increment-and-post-increment-in-c/
+      ((char*)m->data) [data_read++] = input; // NOTICE: post-incremente -> https://www.geeksforgeeks.org/pre-increment-and-post-increment-in-c/
       if(data_read == m->data_size)
         f_m_state = message_end;
     }
@@ -66,10 +77,8 @@ unsigned char read_input(struct Message* m)
   return message_ok;
 }
 
-/*
- * In this case data_type is explicitly a string.
- */
-void sensor_start_initialization(char* data_type)
+///////////////////// FUNCTION FOR DEVICES I/O //////////////////////////
+void device_start_initialization(char* data_type)
 {
   struct Message m = {m_init_flag, 0, (unsigned char) strlen(data_type), data_type};
   send_message(&m);
@@ -78,73 +87,58 @@ void sensor_start_initialization(char* data_type)
  * Why am i making such a tiny an simple and almost useless function?
  * So that in case in the future the intialization will be modified we can just change the code here easily.
  */
-void sensor_initialization(struct Message* m, unsigned char* sensor_id_to_set)
+void device_initialization(struct Message* m, unsigned char* sensor_id_to_set)
 {
   *sensor_id_to_set = m->sensor_id;
 }
 
-/*
- * The sensor function it's the function that will represent our average arduino attitute.
- * It's a void because each sensor will represent a loop for a different sensor.
- * The accepted parameter is a function pointer that will basically retrieve the real
- * data for the wanted sensor. It accepts a data_buffer as input (where the collected 
- * data need to be saved, for example message.data) and returns an int (which is the size of
- * the data read).
- * 
- * The second parameter is the state of the microcontroller, which is an external control
- * to ensure that the single sensor won't overlap.
- * 
- * data_type is a zero terminated char array (a frigging string)
- * 
- */
-void sensor(int (*data_collector) (char* data_buffer),
-            enum Arduino_Message_Buffer_states* mc_state, 
-            char* data_type
+////////////// MAIN LOOPS FOR DEVICES, MICROCONTROLLER ///////////////////////
+enum controller_com_state device_run(Device* d,
+            struct Message* in_buffer,
+            enum controller_com_state in_buffer_state,
+            char reading_input_result
             )
 {
-  // void setup():
-  /*
-   * All statics won't go away every time with call this function, basically like a global,
-   * but the visible only at function level, more or less like a private attribute of a class.
-   */
-  static enum Sensor_state sensor_state = not_initialized;    
-  static unsigned char sensor_id = 0;
-  static char local_message_buffer[254]; // This is used both for output and input, since i won't use both at th same time
-  static struct Message message_in_buffer = {0 , m_no_flags_flag, 0, local_message_buffer};
+  if(d->state == not_initialized && in_buffer_state == idling){
+    device_start_initialization(d->datatype);
+    d->state = initializing;
+    return initializing_device;
+  }
+  if(d->state == initializing && reading_input_result == message_done){
+    device_initialization(in_buffer, &(d->sensor_id));
+    d->state = initialized;
+  }
+  if(d->state == initializing && reading_input_result == message_discarded){
+    d->state = not_initialized;
+    return idling;
+  }
+  if(d->state == initialized && d->sensor_func != NULL){
+    unsigned char data_size;
+    void* data = d->sensor_func(&data_size);
+    struct Message m = {m_no_flags_flag, d->sensor_id, data_size, data};
+    send_message(&m);    
+  }
+  if(d->state == initialized && 
+     d->actuator_func != NULL &&
+     in_buffer_state == idling && 
+     reading_input_result == message_done && 
+     in_buffer -> flags == m_no_flags_flag &&
+     in_buffer -> sensor_id == d-> sensor_id){
+      d->actuator_func(in_buffer -> data);      
+  }
+  return idling;
+}
 
-  if(sensor_state == not_initialized && *mc_state == idling){
-    *mc_state = initializing_sensor;
-    sensor_start_initialization(data_type);
-    sensor_state = initializing;
+#define buffe_size 254
+void controller_loop(Device* devices, unsigned char n_devices)
+{
+  static char* buffer[254] = {0};
+  static struct Message mc_input_buffer = new_empty_message(buffer);
+  static enum controller_com_state com_state = idling;
+
+  char read_return_result = read_input(&mc_input_buffer); // I read the input and save the result of the read
+  for(unsigned char i = 0; i< n_devices; i++){
+    com_state = device_run(devices + i, &mc_input_buffer, com_state, read_return_result); //devices + i it's the i-esimo pointer
   }
-  if(sensor_state == initializing && read_input(&message_in_buffer) == 1){
-    *mc_state = idling;
-    sensor_initialization(&message_in_buffer, &sensor_id); // Passing the sensor_id it's not foundamental, but ehy it's ok
-    sensor_state = initialized;
-  }
-  if(sensor_state == initializing && read_input(&message_in_buffer) == 0){
-    pass; // basically do nothing, i should write sensor_state == initializing to be standard compliant but no i won't write anything.
-  }
-  if(sensor_state == initializing && read_input(&message_in_buffer) == -1){
-    /*
-     * Basically, the intialization went not so ok. In this case, i go back to the state 
-     * of not initialized and let any other sensor that needs to use the read input buffer
-     * read its own stuff and its own stuff.
-     */
-    sensor_state = not_initialized;
-    *mc_state = idling;
-  }
-  /*
-   * If everything its ok (the mc is not busy in some activity with
-   * the outside and I am initialized, then me, a sensor,
-   * I do can read the stuff i need to read and go on with my boring life of sensor
-   * sending stuff to the bridge.
-   */
-  if(sensor_state == initialized && *mc_state == idling){
-    message_in_buffer.data_size = data_collector(local_message_buffer);
-    message_in_buffer.data = local_message_buffer;
-    // I do not need to setup the message ID because it'll be mine for sure
-    message_in_buffer.flags = m_no_flags_flag;
-    send_message(&message_in_buffer);    
-  }
+  
 }
