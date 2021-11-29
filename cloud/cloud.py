@@ -3,13 +3,19 @@
 from datetime import datetime
 
 from config import Config
-from flask import Flask, render_template, request
+from flask import render_template, request, jsonify
+from flask_bootstrap import Bootstrap
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from flask import Flask
+from flask import render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
 appname = "Shopmaker"
 app = Flask(appname)
 myconfig = Config
 app.config.from_object(myconfig)
+Bootstrap(app)
 
 # db creation
 db = SQLAlchemy(app)
