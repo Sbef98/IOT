@@ -201,5 +201,7 @@ void setup() {
 }
 
 void loop() {
+  send_debug_string("Loop started");
   controller_loop(devices, (unsigned char) sizeof(devices)/sizeof(Device));
+  send_debug_string("Loop done");
 }
