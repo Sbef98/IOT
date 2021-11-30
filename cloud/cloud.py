@@ -18,6 +18,7 @@ db = SQLAlchemy(app)
 class Sensor(db.Model):
     __tablename__ = 'sensor'
     id = db.Column('id', db.Integer, primary_key = True)
+    bridge_id = db.Column(db.Integer, nullable = False)
     datatype = db.Column(db.String(100), nullable = False)
 
     def addToDatabase(self):
@@ -49,6 +50,15 @@ def test():
     db.session.commit()
     return str(sensor.id)
 
+@app.route('/addsensor', methods=['POST'])
+def addSensor():
+    json_data = request.get_json()
+
+    sensor = Sensor(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
+    sensor.addToDatabase()
+
+    return str(sensor.id)
+
 @app.route('/addvalue', methods=['POST'])
 def addinlist():
     json_data = request.get_json()
@@ -66,15 +76,6 @@ def addinlist():
         print("added value: ", data_list[i], "for sensor:", sensorid)
 
     return str(0) # function must return something that is not an integer
-
-@app.route('/addsensor', methods=['POST'])
-def addSensor():
-    json_data = request.get_json()
-
-    sensor = Sensor(datatype=json_data['datatype'])
-    sensor.addToDatabase()
-
-    return str(sensor.id)
 
 if __name__ == '__main__':
 
