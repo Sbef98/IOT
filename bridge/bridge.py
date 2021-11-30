@@ -108,8 +108,8 @@ class Bridge():
 
             data = bytearray(b'\xff')
             data.append(sensor_id) 
-            data.append(b'\x00')
-            data.append(244) # equals b'\xfe' as stop sign
+            data.append(00)
+            data.append(254) # equals b'\xfe' as stop sign
             self.ser.write(data)
         else:
             print("Wanted to initialize sensor:", data_json)
