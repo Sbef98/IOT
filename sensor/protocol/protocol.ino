@@ -54,6 +54,7 @@ char string_type[] = {'s','t','r','i','n','g',0};
 //Device s1 = new_sensor(sensor_1, string_type);
 //Device a1 = new_actuator(actuator_1, string_type);
 Device devices[] = { 
+                    /*
                      new_sensor(sensor_1, string_type),
                      new_actuator(actuator_1, string_type),
                      new_actuator(actuator_2, string_type),
@@ -180,6 +181,7 @@ Device devices[] = {
                      new_actuator(actuator_1, string_type),
                      new_actuator(actuator_1, string_type),
                      new_device(sensor_1, actuator_1, string_type),
+                     */
                      new_sensor(sensor_1, string_type),
                      new_actuator(actuator_1, string_type),
                      new_actuator(actuator_1, string_type),

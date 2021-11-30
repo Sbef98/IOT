@@ -108,7 +108,7 @@ enum controller_com_state device_run(Device* d,
     return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
   }
   // If we get in input an initialization answer it completes the initialization
-  if(d->state == initializing && reading_input_result == message_done && in_buffer -> flag == m_init_flag){
+  if(d->state == initializing && reading_input_result == message_done && in_buffer -> flags == m_init_flag){
     device_initialization(in_buffer, &(d->device_id));
     d->state = initialized;
   }
@@ -150,7 +150,7 @@ void controller_loop(Device* devices, unsigned char n_devices)
 
   char read_return_result = read_input(&mc_input_buffer); // I read the input and save the result of the read
   for(unsigned char i = 0; i < n_devices; i++){
-    com_state = device_run(devices + i, &mc_input_buffer, com_state, read_return_result); //devices + i it's the i-esimo pointer to device
+    com_state = com_state == idling ? device_run(devices + i, &mc_input_buffer, com_state, read_return_result) : com_state; //devices + i it's the i-esimo pointer to device
   }
   
 }

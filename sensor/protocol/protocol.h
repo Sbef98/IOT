@@ -40,9 +40,9 @@ enum controller_com_state{
 
 ///////////////////////// MESSAGE STRCTURE ////////////////////////
 
-#define m_init_flag     0b00000001 // Sensor Initialization Message (message initialization => m_init)
+#define m_init_flag     0b10000000 // Sensor Initialization Message (message initialization => m_init)
 #define m_no_flags_flag 0b00000000 // A normal message
-#define m_debug_flag    0b00000010 // Debug message
+#define m_debug_flag    0b01000000 // Debug message
 
 // [FF] [Flags] [Sensor ID] [Data size] [Data] [FE]
 struct Message {
