@@ -26,13 +26,14 @@ Device devices[] = {
                    };
 
 void setup() {
-   
+   Serial.begin(9600);
 }
 
 void loop() {
-  static char c1[] = "loop started";
-  static char c2[] = "loop finished";
+  static char c1[] = {'L','o','o','p',' ','s','t','a','r','t',0};
+  static char c2[] = {'L','o','o','p',' ','s','t','o','p', 0};;
   send_debug_string(c1);
   controller_loop(devices, (unsigned char) sizeof(devices)/sizeof(Device));
   send_debug_string(c2);
+  delay(100);
 }

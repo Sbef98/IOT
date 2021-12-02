@@ -44,6 +44,7 @@ enum controller_com_state{
 #define m_init_flag     0b10000000 // Sensor Initialization Message (message initialization => m_init)
 #define m_no_flags_flag 0b00000000 // A normal message
 #define m_debug_flag    0b01000000 // Debug message
+#define m_on_actuator_flag 0b00100000
 
 // [FF] [Flags] [Sensor ID] [Data size] [Data] [FE]
 struct Message {
@@ -107,7 +108,7 @@ struct device {
  * where it is imported: it makes them private functions!
  */
 
-//extern void send_message(struct Message* m);                                            // Comment this so that it works like a private function 
+extern void send_message(struct Message* m);                                            // Comment this so that it works like a private function 
 //extern char read_input(struct Message* m);                                              // Comment this so that it works like a private function 
 //extern void device_start_initialization(char* data_type);                               // Comment this so that it works like a private function 
 //extern void device_initialization(struct Message* m, unsigned char* device_id_to_set);  // Comment this so that it works like a private function 
