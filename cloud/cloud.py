@@ -15,6 +15,16 @@ app.config.from_object(myconfig)
 # db creation
 db = SQLAlchemy(app)
 
+class Actuator(db.Model):
+    __tablename__ = 'sensor'
+    id = db.Column('id', db.Integer, primary_key = True)
+    bridge_id = db.Column(db.Integer, nullable = False)
+    datatype = db.Column(db.String(100), nullable = False)
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Sensor(db.Model):
     __tablename__ = 'sensor'
     id = db.Column('id', db.Integer, primary_key = True)
@@ -50,14 +60,21 @@ def test():
     db.session.commit()
     return str(sensor.id)
 
-@app.route('/addsensor', methods=['POST'])
-def addSensor():
+@app.route('/adddevice', methods=['POST'])
+def addDevice():
     json_data = request.get_json()
+    device_id = 0
 
-    sensor = Sensor(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
-    sensor.addToDatabase()
+    if (json_data['sensor'] == 'True'):
+        sensor = Sensor(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
+        sensor.addToDatabase()
+        device_id = sensor.id
+    else:
+        actuator = Actuator(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
+        actuator.addToDatabase()
+        device_id = actuator.id
 
-    return str(sensor.id)
+    return str(device_id)
 
 @app.route('/addvalue', methods=['POST'])
 def addinlist():

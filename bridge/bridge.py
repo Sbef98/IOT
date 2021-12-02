@@ -88,18 +88,22 @@ class Bridge():
                 message += self.inbuffer[i].decode("ascii")
             except:
                 print("Print wrong character for: ",i , self.inbuffer[i])
-        print("Debug message: " + message)
+        print("Message as text: " + message)
 
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
             self.state = "newSensor"
             print("Initialize Sensor")
-            self.initializeSensor()
+            self.initializeDevice(sensor=True)
+        elif (flags & (1 << 5) == 32):
+            self.state = "newActuator"
+            print("Initialize Actuator")
+            self.initializeDevice(sensor=False)
         else:
             self.state = "addValueForSensor"
             print("Add Value for Sensor")
             self.addValueForSensor()
 
-    def initializeSensor(self):
+    def initializeDevice(self, sensor):
         # read string from inbuffer until fe
         # FF Flags sensorid=0 datasize datatype_as_string FE
         datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
@@ -109,23 +113,31 @@ class Bridge():
             print(self.inbuffer[4+i])
             datatype += self.inbuffer[4 + i].decode("ascii")
 
-        print(datatype)
         data_json = {}
         data_json['bridge'] = str(self.name)
+        if (sensor):
+            data_json['sensor'] = "True"
+        else:
+            data_json['sensor'] = "False"
         data_json['datatype'] = datatype
-        print(data_json)
+        print("json_data for initilization: ", data_json)
 
         if (not self.debug):
-            response = requests.post(self.cloud + '/addsensor', json=data_json)
-            sensor_id = int(response.content) # TODO: answer in a nicer machine readable way
-            print(response.ok)
+            response = requests.post(self.cloud + '/adddevice', json=data_json)
+            device_id = int(response.content) # TODO: answer in a nicer machine readable way
+            
+            if (sensor):
+                flags = 128
+            else:
+                flags = 32
 
             data = bytearray(b'\xff')
-            data.append(128)
-            data.append(sensor_id) 
+            data.append(flags)
+            data.append(device_id) 
             data.append(00) # datasize is zero
             data.append(254) # equals b'\xfe' as stop sign
             print(data, len(data))
+            
             self.ser.write(data)
             print("Sent sensor_id to arduino",  sensor_id)
         else:
