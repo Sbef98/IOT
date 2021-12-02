@@ -13,7 +13,7 @@ class Bridge():
     def setup(self):
         self.debug = False
         self.name = 1 # Change when using a new bridge!
-        self.cloud = 'http://0.0.0.0:80'
+        self.cloud = 'http://127.0.0.1:80'
 
         # open serial port
         self.ser = None
@@ -64,8 +64,8 @@ class Bridge():
 
     def useData(self):
         # I have received a line from the serial port. I can use it
-        if len(self.inbuffer)<4:   # at least header, flags, new sensor datatype, footer
-            print("Warning: Message has is shorter than minimum size")
+        if len(self.inbuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
+            print("Warning: Message is shorter than minimum size")
             return False
         # split parts
         if self.inbuffer[0] != b'\xff': # first byte
@@ -80,6 +80,16 @@ class Bridge():
             self.debug = True
             print("Debug message")
 
+        print("Flags: ", flags)
+
+        message = ""
+        for i in range(2, len(self.inbuffer)):
+            try:
+                message += self.inbuffer[i].decode("ascii")
+            except:
+                print("Print wrong character for: ",i , self.inbuffer[i])
+        print("Debug message: " + message)
+
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
             self.state = "newSensor"
             print("Initialize Sensor")
@@ -91,26 +101,33 @@ class Bridge():
 
     def initializeSensor(self):
         # read string from inbuffer until fe
-        # FF Flags datasize datatype_as_string FE
-        datasize = int.from_bytes(self.inbuffer[2], byteorder='little')
-
+        # FF Flags sensorid=0 datasize datatype_as_string FE
+        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+        
         datatype = ""
         for i in range(datasize):
-            datatype += self.inbuffer[3 + i].decode("ascii")
+            print(self.inbuffer[4+i])
+            datatype += self.inbuffer[4 + i].decode("ascii")
 
+        print(datatype)
         data_json = {}
         data_json['bridge'] = str(self.name)
         data_json['datatype'] = datatype
+        print(data_json)
 
         if (not self.debug):
             response = requests.post(self.cloud + '/addsensor', json=data_json)
-            sensor_id = response.content # TODO: answer in a nicer machine readable way
+            sensor_id = int(response.content) # TODO: answer in a nicer machine readable way
+            print(response.ok)
 
             data = bytearray(b'\xff')
+            data.append(128)
             data.append(sensor_id) 
-            data.append(00)
+            data.append(00) # datasize is zero
             data.append(254) # equals b'\xfe' as stop sign
+            print(data, len(data))
             self.ser.write(data)
+            print("Sent sensor_id to arduino",  sensor_id)
         else:
             print("Wanted to initialize sensor:", data_json)
 
@@ -121,10 +138,13 @@ class Bridge():
         datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
 
         for i in range (datasize):
-            val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
-            currentData.addValue(val)
-            strval = "Sensor %d: %d " % (sensorID, val)
-            print(strval)
+            try:
+                val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
+                currentData.addValue(val)
+                strval = "Sensor %d: %d " % (sensorID, val)
+                print(strval)
+            except:
+                print("Datasize not matching: ", datasize, len(self.inbuffer))
 
         # send the read data as json to the cloud
         data_json = currentData.getJSON()
