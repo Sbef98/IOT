@@ -154,3 +154,5 @@ void controller_loop(Device* devices, unsigned char n_devices)
   }
   
 }
+
+//void mc_loop(int (*data_collector) (char* data_buffer))

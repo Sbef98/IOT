@@ -1,47 +1,81 @@
-from flask import Flask
-from config import Config
-from flask import render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+#!/usr/bin/env python3
 
-appname = "IOT - sample1"
+from config import Config
+from datetime import datetime
+from flask import Flask
+from flask import render_template, request
+from flask_sqlalchemy import SQLAlchemy
+
+appname = "Shopmaker"
 app = Flask(appname)
 myconfig = Config
 # TODO: check why the url on which we are running is not 127.0.0.1
-# TODO: change appname, database name
 app.config.from_object(myconfig)
 
 # db creation
 db = SQLAlchemy(app)
 
-# TODO: what do we need this for?
+class Sensor(db.Model):
+    __tablename__ = 'sensor'
+    id = db.Column('id', db.Integer, primary_key = True)
+    bridge_id = db.Column(db.Integer, nullable = False)
+    datatype = db.Column(db.String(100), nullable = False)
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Sensorfeed(db.Model):
-    id = db.Column('student_id', db.Integer, primary_key = True)
+    __tablename__ = 'sensorfeed'
+    id = db.Column('feedid', db.Integer, primary_key = True)
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
+    sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
+    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id'), 
+        foreign_keys = [sensor_id], lazy = True)
 
-    def __init__(self, value):
-        self.value = value
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
 
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
 
 @app.route('/')
-def testoHTML():
-    if request.accept_mimetypes['application/json']:
-        return jsonify( {'text':'I Love IoT'}), '200 OK'
-    else:
-        return '<h1>I love IoT</h1>'
-
-@app.route('/addvalue/<val>', methods=['POST'])
-def addinlista(val):
-    sf = Sensorfeed(val)
-
-    db.session.add(sf)
+def test():
+    # add initial sensor
+    sensor = Sensor(datatype = "integer")
+    db.session.add(sensor)   
     db.session.commit()
-    print("added value: ", val)
-    return str(sf.id)
+    return str(sensor.id)
+
+@app.route('/addsensor', methods=['POST'])
+def addSensor():
+    json_data = request.get_json()
+
+    sensor = Sensor(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
+    sensor.addToDatabase()
+
+    return str(sensor.id)
+
+@app.route('/addvalue', methods=['POST'])
+def addinlist():
+    json_data = request.get_json()
+
+    sensorid = int(json_data['sensorid'])
+    # sensor = Sensor.query.get(sensorid)
+    sensor = Sensor.query.get(1)
+    datasize = int(json_data['datasize'])
+    data_list = json_data['data']
+
+    for i in range(datasize):
+        print(i)
+        sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
+        sf.addToDatabase()
+        print("added value: ", data_list[i], "for sensor:", sensorid)
+
+    return str(0) # function must return something that is not an integer
 
 if __name__ == '__main__':
 
@@ -50,4 +84,4 @@ if __name__ == '__main__':
 
     port = 80
     interface = '0.0.0.0'
-    app.run(host=interface,port=port)
+    app.run(host=interface,port=port, debug=True)

@@ -1,5 +1,5 @@
 # IOT
 > A led is enough sometimes
 
-## Purpose of thi project
-The purpose is building a framework that easily allows anybody to make their shop quite more smart than usually.
+## Purpose of this project
+The purpose is to build a framework that easily allows anybody to make their shop smarter than usual.
