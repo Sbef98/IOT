@@ -16,7 +16,7 @@ app.config.from_object(myconfig)
 db = SQLAlchemy(app)
 
 class Actuator(db.Model):
-    __tablename__ = 'sensor'
+    __tablename__ = 'actuator'
     id = db.Column('id', db.Integer, primary_key = True)
     bridge_id = db.Column(db.Integer, nullable = False)
     datatype = db.Column(db.String(100), nullable = False)
@@ -55,7 +55,7 @@ def page_not_found(error):
 @app.route('/')
 def test():
     # add initial sensor
-    sensor = Sensor(datatype = "integer")
+    sensor = Sensor(bridge_id = 1, datatype = "integer")
     db.session.add(sensor)   
     db.session.commit()
     return str(sensor.id)
@@ -81,13 +81,16 @@ def addinlist():
     json_data = request.get_json()
 
     sensorid = int(json_data['sensorid'])
-    # sensor = Sensor.query.get(sensorid)
-    sensor = Sensor.query.get(1)
+    sensor = Sensor.query.get(sensorid)
+
+    if (not sensor):
+        print("Warning: Sensor not found with id: ", sensorid)
+        return "Given id for sensor not in database", 400
+
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
 
     for i in range(datasize):
-        print(i)
         sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
         sf.addToDatabase()
         print("added value: ", data_list[i], "for sensor:", sensorid)
