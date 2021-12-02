@@ -78,9 +78,9 @@ char read_input(struct Message* m)
 }
 
 ///////////////////// FUNCTION FOR DEVICES I/O //////////////////////////
-void device_start_initialization(char* data_type)
+void device_start_initialization(char* data_type, bool actuator)
 {
-  struct Message m = {m_init_flag, 0, (unsigned char) strlen(data_type), data_type};
+  struct Message m = {m_init_flag | actuator == true ? m_on_actuator_flag : 0, 0, (unsigned char) strlen(data_type), data_type};
   send_message(&m);
 }
 /*
@@ -102,8 +102,13 @@ enum controller_com_state device_run(Device* d,
             )
 {
   // Checking if device needs to be initialized and if i'm currently allowed to start initialization
-  if(d->state == not_initialized && in_buffer_state == idling){
-    device_start_initialization(d->datatype);
+  if(d->state == not_initialized && in_buffer_state == idling && d->actuator_func != NULL){
+    device_start_initialization(d->datatype, true);
+    d->state = initializing;
+    return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
+  }
+  if(d->state == not_initialized && in_buffer_state == idling && d->actuator_func == NULL){
+    device_start_initialization(d->datatype, false);
     d->state = initializing;
     return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
   }
