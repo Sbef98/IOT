@@ -44,7 +44,7 @@ enum controller_com_state{
 #define m_init_flag     0b10000000 // Sensor Initialization Message (message initialization => m_init)
 #define m_no_flags_flag 0b00000000 // A normal message
 #define m_debug_flag    0b01000000 // Debug message
-#define m_on_actuator_flag 0b00100000
+#define m_on_actuator_flag 0b00100000 //Actuator flag
 
 // [FF] [Flags] [Sensor ID] [Data size] [Data] [FE]
 struct Message {
@@ -59,7 +59,7 @@ struct Message {
  */
 #define new_empty_message(buffer)  {m_no_flags_flag, 0, 0, (buffer)}
 // A string debug message is useful to send any kind of string value through the serial interface
-#define new_string_debug_message(buffer) {m_debug_flag, 0,(unsigned char) strlen((buffer)), (void*) (buffer)}
+#define new_string_debug_message(buffer) {m_debug_flag, 0,(unsigned char) strlen((buffer))+1, (void*) (buffer)}
 
 // These are the results possible when using the function "read_input"
 #define message_done 1        // It read a full message correctly

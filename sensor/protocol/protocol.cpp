@@ -18,7 +18,7 @@ void send_debug_string(char* debug_string){
 }
 
 void send_debug_message(struct Message* m){
-  m->flags = m->flags & m_debug_flag;     //Just adding the debug flag coz so
+  m->flags = m->flags | m_debug_flag;     //Just adding the debug flag coz so
   send_message(m);
 }
 
@@ -28,49 +28,79 @@ void send_debug_message(struct Message* m){
  */
 char read_input(struct Message* m)
 {
+  //send_debug_string("i'm in the reading input function");
   static enum Reading_states f_m_state = message_begin;
   static unsigned char data_read = 0;
   while(Serial.available() > 0){
-    
+    send_debug_string("There is stuff in the buffer to read");
     //First of all i check if the message i'm reading already won't be broken at next read
-    char input = Serial.peek(); //returns next character in buffer but does not delete it
+    unsigned char input = (unsigned char) Serial.peek(); //returns next character in buffer but does not delete it
+
+    if(f_m_state == message_begin && input != 0xff){
+      send_debug_string("Not getting an 0xff!");
+      struct Message mm = {m_debug_flag, 0, 1, &input};
+      send_debug_message(&mm);
+      
+    }
+    
     if(f_m_state != message_begin && input == 0xff){
       f_m_state = message_begin;
-      return message_discarded;    
+      send_debug_string("A new message started before the previous one finished");
+      return message_discarded;
     }
 
     //Here i begin reading the actual message
-    input = Serial.read();
-    if(f_m_state == data_reading && input == 0xfe){
+    input = (unsigned char) Serial.read();
+    //char d[] = {(unsigned char) input, 0};
+    //send_debug_string(d);
+    if(f_m_state == data_reading && input == 0xfe && data_read != m->data_size){
       f_m_state = message_begin;
+      send_debug_string("THe message finished before the reading was finished");
       return message_discarded;
     }
     
-    if(f_m_state == message_begin && input == 0xff)
+    if(f_m_state == message_begin && input == 0xff){
       f_m_state = flags_read;
+      send_debug_string("New message in input");
+      continue;
+    }
     
     if(f_m_state == flags_read){
       m->flags = input;
       f_m_state = device_id_read;
+      send_debug_string("Flags read");
+      continue;
     }
     if(f_m_state == device_id_read){
       m->device_id = input;
       f_m_state = data_size_read;
+      send_debug_string("device_id read");
+      continue;
     }
     if(f_m_state == data_size_read){
       m->data_size = input;
       f_m_state = data_reading;
       data_read = 0;
+      send_debug_string("Datasize read, starting reading input");
+      continue;
     }
-    if(f_m_state == data_reading){
-      ((char*)m->data) [data_read++] = input; // NOTICE: post-incremente -> https://www.geeksforgeeks.org/pre-increment-and-post-increment-in-c/
-      if(data_read == m->data_size)
+    if(data_read == m->data_size && f_m_state == data_reading){
         f_m_state = message_end;
+        send_debug_string("The whole message was read, let's wait for the xFE byte");
+      }
+    if(f_m_state == data_reading && data_read != m->data_size ){        
+      ((char*)m->data) [data_read++] = input; // NOTICE: post-increment -> https://www.geeksforgeeks.org/pre-increment-and-post-increment-in-c/
+      continue;
     }
     if(f_m_state == message_end && input == 0xfe){
       f_m_state = message_begin;
-      if(data_read != m->data_size)
+      if(data_read != m->data_size){
+        send_debug_string("The datasize and the data read are not maching despite we reached the 0xfe");
+        send_debug_message(m);
         return message_discarded;
+      }
+      send_debug_string("Message finished! This is the message:");
+      send_debug_message(m);
       return message_done;
     }
   }
@@ -80,8 +110,10 @@ char read_input(struct Message* m)
 ///////////////////// FUNCTION FOR DEVICES I/O //////////////////////////
 void device_start_initialization(char* data_type, bool actuator)
 {
-  struct Message m = {m_init_flag | actuator == true ? m_on_actuator_flag : 0, 0, (unsigned char) strlen(data_type), data_type};
+  struct Message m = {(m_init_flag | (actuator == true ? m_on_actuator_flag : 0)), 0, (unsigned char) strlen(data_type), data_type};
   send_message(&m);
+  //char flag_char[] = {(m_init_flag | (actuator == true ? m_on_actuator_flag : 0)), 0};
+  //send_debug_string(flag_char);
 }
 /*
  * Why am i making such a tiny an simple and almost useless function?
@@ -94,6 +126,8 @@ void device_initialization(struct Message* m, unsigned char* device_id_to_set)
 
 ////////////// MAIN LOOPS FOR DEVICES, MICROCONTROLLER ///////////////////////
 
+int ledState = LOW; 
+
 //This is the function that will manage the single device state
 enum controller_com_state device_run(Device* d,
             struct Message* in_buffer,
@@ -101,21 +135,25 @@ enum controller_com_state device_run(Device* d,
             char reading_input_result
             )
 {
+  d->state == initializing ? digitalWrite(3, HIGH) : digitalWrite(3, LOW);
   // Checking if device needs to be initialized and if i'm currently allowed to start initialization
   if(d->state == not_initialized && in_buffer_state == idling && d->actuator_func != NULL){
     device_start_initialization(d->datatype, true);
     d->state = initializing;
     return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
   }
+  
   if(d->state == not_initialized && in_buffer_state == idling && d->actuator_func == NULL){
     device_start_initialization(d->datatype, false);
     d->state = initializing;
     return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
   }
+  
   // If we get in input an initialization answer it completes the initialization
-  if(d->state == initializing && reading_input_result == message_done && in_buffer -> flags == m_init_flag){
+  if(d->state == initializing && reading_input_result == message_done && (in_buffer -> flags & m_init_flag) != 0){
     device_initialization(in_buffer, &(d->device_id));
     d->state = initialized;
+    return idling;
   }
   // If the incoming message was broken, we cannot tell if the initialization went well.
   // THIS MAY BE A WEAK POINT OF OUR STRATEGY. NEEDS TO BE HANDLED SOMEHOW BETTER THAN THIS
@@ -146,6 +184,8 @@ enum controller_com_state device_run(Device* d,
   return idling; // I tell to the microcontroller that i do not need any special reservation to the in_buffer!
 }
 
+
+
 #define buffer_size 254 // well in case i needed to write in more places and update it quickly
 void controller_loop(Device* devices, unsigned char n_devices)
 {
@@ -155,9 +195,10 @@ void controller_loop(Device* devices, unsigned char n_devices)
 
   char read_return_result = read_input(&mc_input_buffer); // I read the input and save the result of the read
   for(unsigned char i = 0; i < n_devices; i++){
-    com_state = com_state == idling ? device_run(devices + i, &mc_input_buffer, com_state, read_return_result) : com_state; //devices + i it's the i-esimo pointer to device
+    enum controller_com_state new_state = device_run(devices + i, &mc_input_buffer, com_state, read_return_result);
+    com_state = com_state == idling ? new_state : com_state; //devices + i it's the i-esimo pointer to device
   }
-  
+  delay(100);
 }
 
 //void mc_loop(int (*data_collector) (char* data_buffer))
