@@ -1,25 +1,38 @@
-//#include  "protocol.h"
-//////////////////////// GLOBAL VARS //////////////////////////////
+#include  "protocol.h"
 
-int data_collector1 (char* data_buffer){
-  Serial.println("ciao mamma");
+void* sensor_1 (unsigned char* return_data_size)
+{
+  static char c[] = {'s','o','c','c','m','e','l',0};
+  *return_data_size = strlen("soccmel");
+  return c;
 }
-int data_collector2 (char* data_buffer){
-  Serial.println("ciao");
+
+unsigned char actuator_1 (void* data_received)
+{
+  static char c[] = {'A','t','t','u','a','t','o',0};
+  send_debug_string(c);
+  return 0;
 }
+
+//////////////////////// GLOBAL VARS //////////////////////////////
+char string_type[] = {'s','t','r','i','n','g',0};
+//Device s1 = {(sensor_1), NULL, not_initialized, 0, (string_type)};
+//Device s1 = new_sensor(sensor_1, string_type);
+//Device a1 = new_actuator(actuator_1, string_type);
+Device devices[] = {
+                     new_sensor(sensor_1, string_type),
+                     new_actuator(actuator_1, string_type),
+                     new_device(sensor_1, actuator_1, string_type)
+                   };
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600);
+   
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  char* tt[2] = {(char*)data_collector1, (char*)data_collector2}; // This is some toxic stuff but idk how to do it better than this
-  int (*func1) (char* data_buffer) = (int (*)(char*))tt[1];
-  int (*func2) (char* data_buffer) = (int (*)(char*))tt[0];
-  char c[2] = {'t',0};
-  func1(c);
-  func2(c);
-  delay(1000);
+  static char c1[] = "loop started";
+  static char c2[] = "loop finished";
+  send_debug_string(c1);
+  controller_loop(devices, (unsigned char) sizeof(devices)/sizeof(Device));
+  send_debug_string(c2);
 }
