@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from data import DataSet
+from datetime import datetime
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
@@ -14,6 +15,10 @@ class Bridge():
         self.debug = False
         self.name = 1 # Change when using a new bridge!
         self.cloud = 'http://127.0.0.1:8000'
+
+        self.sensors = []
+        self.actuators = []
+        self.lastQuery = datetime.utcnow()
 
         # open serial port
         self.ser = None
@@ -62,6 +67,10 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
+                self.lastQuery = datetime.utcnow()
+                self.queryForNewActuatorValues()
+
     def useData(self):
         # I have received a line from the serial port. I can use it
         if len(self.inbuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
@@ -91,13 +100,15 @@ class Bridge():
         print("Message as text: " + message)
 
         if (flags & (1 << 7) == 128): # check whether first bit of flags is set
-            self.state = "newSensor"
-            print("Initialize Sensor")
-            self.initializeDevice(sensor=True)
-        elif (flags & (1 << 5) == 32):
-            self.state = "newActuator"
-            print("Initialize Actuator")
-            self.initializeDevice(sensor=False)
+            if (flags & (1 << 5) == 32):
+                self.state = "newActuator"
+                print("Initialize Actuator")
+                self.initializeDevice(sensor=False)
+            else:
+                self.state = "newSensor"
+                print("Initialize Sensor")
+                self.initializeDevice(sensor=True)
+            
         else:
             self.state = "addValueForSensor"
             print("Add Value for Sensor")
@@ -167,6 +178,19 @@ class Bridge():
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
             print("Wanted to send the following data to the cloud: ", data_json)
+
+    def queryForNewActuatorValues(self):
+        data_json = {}
+        data_json['actuator_num'] = str(len(self.actuators))
+        data_json['actuators'] = [str(actuator) for actuator in self.actuators]
+        response = requests.post(self.cloud + '/getNewValues', json=data_json)
+
+        response_json = response.json()
+        response_json = json.load(response_json)
+
+        for actuator in response_json:
+            value = response_json[actuator]
+
 
 if __name__ == '__main__':
     br=Bridge()
