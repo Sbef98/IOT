@@ -13,7 +13,7 @@ class Bridge():
     def setup(self):
         self.debug = False
         self.name = 1 # Change when using a new bridge!
-        self.cloud = 'http://127.0.0.1:80'
+        self.cloud = 'http://127.0.0.1:8000'
 
         # open serial port
         self.ser = None

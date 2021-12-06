@@ -13,7 +13,7 @@ class Config:
 
     FLASK_APP = 'app.py'
     FLASK_RUN_HOST = 'localhost'
-    FLASK_RUN_PORT = 80
+    FLASK_RUN_PORT = 8000
 
     FLASK_DEBUG = 0
     FLASK_ENV = "development" #production
