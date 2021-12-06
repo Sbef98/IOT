@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
+<<<<<<< HEAD
 from data import DataSet
+=======
+from data import *
+>>>>>>> e6fdd71 (Extract message creation to send to arduino into extra file)
 from datetime import datetime
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
@@ -22,6 +26,8 @@ class Bridge():
         self.lastQuery = datetime.utcnow()
 =======
 >>>>>>> 4b15b8a (Make the bridge able to query for new values for the actuators)
+
+        self.lastQuery = datetime.utcnow()
 
         # open serial port
         self.ser = None
@@ -70,19 +76,9 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
-<<<<<<< HEAD
             if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
                 self.lastQuery = datetime.utcnow()
-#                self.queryForNewActuatorValues()
-=======
-<<<<<<< HEAD
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
-                self.lastQuery = datetime.utcnow()
                 self.queryForNewActuatorValues()
-=======
-            self.queryForNewActuatorValues()
->>>>>>> 4b15b8a (Make the bridge able to query for new values for the actuators)
->>>>>>> 8543366 (Make the bridge able to query for new values for the actuators)
 
     def useData(self):
         # I have received a line from the serial port. I can use it
@@ -157,15 +153,10 @@ class Bridge():
                 flags = 32 + 128
                 self.actuators.append(device_id)
 
-            data = bytearray(b'\xff')
-            data.append(flags)
-            data.append(device_id) 
-            data.append(00) # datasize is zero
-            data.append(254) # equals b'\xfe' as stop sign
-            print(data, len(data))
+            data = create_device_initialization_message(flags, device_id)
             
             self.ser.write(data)
-            print("Sent sensor_id to arduino",  device_id)
+            print("Sent device_id to arduino",  device_id)
         else:
             print("Wanted to initialize sensor:", data_json)
 
@@ -200,11 +191,14 @@ class Bridge():
         data_json['actuators'] = [str(actuator) for actuator in self.actuators]
         response = requests.post(self.cloud + '/getNewValues', json=data_json)
 
-        response_json = response.json()
-        response_json = json.load(response_json)
+        actuators = response.json()
 
-        for actuator in response_json:
-            value = response_json[actuator]
+        for actuator in actuators:
+            value = actuators[actuator]
+            data = create_actuator_new_value_message(actuator, value)
+            self.ser.write(data)
+
+            print("Sent actuator: ", actuator, "value: ", value)
 
 if __name__ == '__main__':
     br=Bridge()
