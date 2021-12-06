@@ -18,7 +18,10 @@ class Bridge():
 
         self.sensors = []
         self.actuators = []
+<<<<<<< HEAD
         self.lastQuery = datetime.utcnow()
+=======
+>>>>>>> 4b15b8a (Make the bridge able to query for new values for the actuators)
 
         # open serial port
         self.ser = None
@@ -67,9 +70,19 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
+<<<<<<< HEAD
             if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
                 self.lastQuery = datetime.utcnow()
 #                self.queryForNewActuatorValues()
+=======
+<<<<<<< HEAD
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
+                self.lastQuery = datetime.utcnow()
+                self.queryForNewActuatorValues()
+=======
+            self.queryForNewActuatorValues()
+>>>>>>> 4b15b8a (Make the bridge able to query for new values for the actuators)
+>>>>>>> 8543366 (Make the bridge able to query for new values for the actuators)
 
     def useData(self):
         # I have received a line from the serial port. I can use it
@@ -139,8 +152,10 @@ class Bridge():
             
             if (sensor):
                 flags = 128
+                self.sensors.append(device_id)
             else:
                 flags = 32 + 128
+                self.actuators.append(device_id)
 
             data = bytearray(b'\xff')
             data.append(flags)
@@ -190,7 +205,6 @@ class Bridge():
 
         for actuator in response_json:
             value = response_json[actuator]
-
 
 if __name__ == '__main__':
     br=Bridge()
