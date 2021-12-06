@@ -55,7 +55,7 @@ def page_not_found(error):
 @app.route('/')
 def test():
     # add initial sensor
-    sensor = Sensor(bridge_id = 1, datatype = "integer")
+    sensor = Actuator(bridge_id = 1, datatype = "string")
     db.session.add(sensor)   
     db.session.commit()
     return str(sensor.id)
@@ -96,6 +96,21 @@ def addinlist():
         print("added value: ", data_list[i], "for sensor:", sensorid)
 
     return str(0) # function must return something that is not an integer
+
+@app.route('/getNewValues', methods=['POST'])
+def getNewValues():
+    json_data = request.get_json()
+
+    actuator_number = json_data['actuator_num']
+    actuator_list = json_data['actuators']
+
+    json_answer = {}
+
+    for i in range(actuator_number):
+        actuator = Actuator.query.get(actuator_list[i])
+        if (actuator.datatype == 'string'):
+            json_answer[str(actuator.id)] = "hello"
+    return json_answer
 
 if __name__ == '__main__':
 
