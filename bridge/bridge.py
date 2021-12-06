@@ -139,7 +139,7 @@ class Bridge():
             print(data, len(data))
             
             self.ser.write(data)
-            print("Sent sensor_id to arduino",  sensor_id)
+            print("Sent sensor_id to arduino",  device_id)
         else:
             print("Wanted to initialize sensor:", data_json)
 
