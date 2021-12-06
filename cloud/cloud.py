@@ -93,7 +93,7 @@ def addinlist():
     for i in range(datasize):
         sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
         sf.addToDatabase()
-        print("added value: ", data_list[i], "for sensor:", sensorid)
+        print("for sensor: ", sensorid, "added value: ", data_list[i])
 
     return str(0) # function must return something that is not an integer
 
@@ -101,7 +101,7 @@ def addinlist():
 def getNewValues():
     json_data = request.get_json()
 
-    actuator_number = json_data['actuator_num']
+    actuator_number = int(json_data['actuator_num'])
     actuator_list = json_data['actuators']
 
     json_answer = {}
