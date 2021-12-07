@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 
-<<<<<<< HEAD
-from data import DataSet
-=======
 from data import *
->>>>>>> e6fdd71 (Extract message creation to send to arduino into extra file)
 from datetime import datetime
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
@@ -22,10 +18,6 @@ class Bridge():
 
         self.sensors = []
         self.actuators = []
-<<<<<<< HEAD
-        self.lastQuery = datetime.utcnow()
-=======
->>>>>>> 4b15b8a (Make the bridge able to query for new values for the actuators)
 
         self.lastQuery = datetime.utcnow()
 
@@ -76,7 +68,7 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
                 self.lastQuery = datetime.utcnow()
                 self.queryForNewActuatorValues()
 
@@ -153,7 +145,7 @@ class Bridge():
                 flags = 32 + 128
                 self.actuators.append(device_id)
 
-            data = create_device_initialization_message(flags, device_id)
+            data = createDeviceInitializationMessage(flags, device_id)
             
             self.ser.write(data)
             print("Sent device_id to arduino",  device_id)
@@ -195,7 +187,7 @@ class Bridge():
 
         for actuator in actuators:
             value = actuators[actuator]
-            data = create_actuator_new_value_message(actuator, value)
+            data = createActuatorNewValueMessage(actuator, value)
             self.ser.write(data)
 
             print("Sent actuator: ", actuator, "value: ", value)

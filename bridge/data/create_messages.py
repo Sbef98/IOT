@@ -1,18 +1,19 @@
 
-def create_message_for_arduino(flags, device_id, datasize, data):
-	data = bytearray(b'\xff')
-	data.append(flags)
-	data.append(device_id)
-	data.append(datasize)
+def createMessageForArduino(flags, device_id, datasize, data):
+	# Note: datasize > 1 needs to be fixed
+	message = b'\xff'
+	message = message + bytes([flags])
+	message = message + bytes([device_id])
+	message = message + bytes([datasize])
 	if(datasize > 0):
-		data.append(data)
-	data.append(254) # equals b'\xfe' as stop sign
-	print(data, len(data))
+		message = message + bytes([data])
+	message = message + b'\xfe'
+	print("Message to be send to arduino: ", message," with length: ", len(message))
 
-	return data
+	return message
 
-def create_device_initialization_message(flags, device_id):
-	return create_message_for_arduino(flags=flags, device_id=device_id, datasize=0, data={})
+def createDeviceInitializationMessage(flags, device_id):
+	return createMessageForArduino(flags=flags, device_id=device_id, datasize=0, data={})
 
-def create_actuator_new_value_message(device_id, data):
-	return create_message_for_arduino(flags=32, device_id=device_id, datasize=len(data), data=data)
+def createActuatorNewValueMessage(device_id, data):
+	return createMessageForArduino(flags=32, device_id=device_id, datasize=len(data), data=data)
