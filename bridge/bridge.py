@@ -68,7 +68,8 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
+            # query the cloud every minute for new Data for the actuators
                 self.lastQuery = datetime.utcnow()
                 self.queryForNewActuatorValues()
 
@@ -127,10 +128,9 @@ class Bridge():
 
         data_json = {}
         data_json['bridge'] = str(self.name)
-        if (sensor):
-            data_json['sensor'] = "True"
-        else:
-            data_json['sensor'] = "False"
+
+        data_json['sensor'] = "True" if sensor else "False"
+    
         data_json['datatype'] = datatype
         print("json_data for initilization: ", data_json)
 
@@ -150,7 +150,7 @@ class Bridge():
             self.ser.write(data)
             print("Sent device_id to arduino",  device_id)
         else:
-            print("Wanted to initialize sensor:", data_json)
+            print("Debug: Wanted to initialize sensor:", data_json)
 
     def addValueForSensor(self):
         sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
@@ -175,7 +175,7 @@ class Bridge():
             if (not response.ok):
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
-            print("Wanted to send the following data to the cloud: ", data_json)
+            print("Debug: Wanted to send the following data to the cloud: ", data_json)
 
     def queryForNewActuatorValues(self):
         data_json = {}
@@ -183,6 +183,7 @@ class Bridge():
         data_json['actuators'] = [str(actuator) for actuator in self.actuators]
         response = requests.post(self.cloud + '/getNewValues', json=data_json)
 
+        # expecting json like {'actuator_number' : 'actuator_value'}
         actuators = response.json()
 
         for actuator in actuators:
