@@ -63,10 +63,16 @@ def page_not_found(error):
     return 'Error', 404
 
 @app.route('/')
+def overview():
+    return render_template('index.html')
+
+@app.route('/test')
 def test():
     # add initial sensor
-    sensor = Actuator(bridge_id = 1, datatype = "string")
-    db.session.add(sensor)   
+    sensor = Sensor(bridge_id = 1, datatype = "integer")
+    actuator = Actuator(bridge_id = 1, datatype = "integer")
+    db.session.add(sensor)
+    db.session.add(actuator)   
     db.session.commit()
     return str(sensor.id)
 
