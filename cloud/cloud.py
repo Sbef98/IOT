@@ -9,7 +9,6 @@ from flask_sqlalchemy import SQLAlchemy
 appname = "Shopmaker"
 app = Flask(appname)
 myconfig = Config
-# TODO: check why the url on which we are running is not 127.0.0.1
 app.config.from_object(myconfig)
 
 # db creation

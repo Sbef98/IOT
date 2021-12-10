@@ -8,6 +8,7 @@ import requests
 import serial
 import serial.tools.list_ports
 from sys import platform
+import time
 
 class Bridge():
 
@@ -199,6 +200,7 @@ class Bridge():
             self.ser.write(data)
 
             print("Sent actuator: ", actuator, "value: ", value)
+            time.sleep(5)
 
 if __name__ == '__main__':
     br=Bridge()
