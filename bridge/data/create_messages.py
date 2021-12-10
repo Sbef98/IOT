@@ -16,4 +16,4 @@ def createDeviceInitializationMessage(flags, device_id):
 	return createMessageForArduino(flags=flags, device_id=device_id, datasize=0, data={})
 
 def createActuatorNewValueMessage(device_id, data):
-	return createMessageForArduino(flags=32, device_id=device_id, datasize=len(data), data=data)
+	return createMessageForArduino(flags=32, device_id=device_id, datasize=len(int(data)), data=data)
