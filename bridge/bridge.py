@@ -31,7 +31,7 @@ class Bridge():
         for port in ports:
             print (port.device)
             print (port.description)
-            if (platform == 'linux' and 'seeeduino' in port.description.lower()) or (platform == 'win32' and 'com4' in port.description.lower()):
+            if (platform == 'linux' and 'seeeduino' in port.description.lower()) or (platform == 'win32' and 'com4' in port.description.lower()) or ("usb" in port.description.lower()):
                 self.portname = port.device
                 print ("connecting to " + self.portname)
                 break
@@ -67,9 +67,9 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60)
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
                 self.lastQuery = datetime.utcnow()
-                self.queryForNewActuatorValues()
+#                self.queryForNewActuatorValues()
 
     def useData(self):
         # I have received a line from the serial port. I can use it
@@ -140,7 +140,7 @@ class Bridge():
             if (sensor):
                 flags = 128
             else:
-                flags = 32
+                flags = 32 + 128
 
             data = bytearray(b'\xff')
             data.append(flags)

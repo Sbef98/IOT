@@ -1,4 +1,81 @@
 #include "protocol.h"
+// checking status // 
+
+void Message_in_started(int buzzer_pin){
+    int melody[] = {
+      NOTE_C4, NOTE_G3//, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+    };
+    
+    // note durations: 4 = quarter note, 8 = eighth note, etc.:
+    int noteDurations[] = {
+      4, 8//, 8, 4, 4, 4, 4, 4
+    };
+    for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    // to calculate the note duration, take one second divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(8, melody[thisNote], noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(8);
+  }
+}
+
+void Message_in_finished(int buzzer_pin){
+    int melody[] = {
+      /*NOTE_C4, NOTE_G3,*/ NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+    };
+    
+    // note durations: 4 = quarter note, 8 = eighth note, etc.:
+    int noteDurations[] = {
+      4, 8//, 8, 4, 4, 4, 4, 4
+    };
+    for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    // to calculate the note duration, take one second divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(8, melody[thisNote], noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(8);
+  }
+}
+
+void Message_in_discarded(int buzzer_pin){
+    int melody[] = {
+      /*NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4*/NOTE_C1,
+    };
+    
+    // note durations: 4 = quarter note, 8 = eighth note, etc.:
+    int noteDurations[] = {
+      15//4, 8//, 8, 4, 4, 4, 4, 4
+    };
+    for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+    // to calculate the note duration, take one second divided by the note type.
+    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+    int noteDuration = 1000 / noteDurations[thisNote];
+    tone(8, melody[thisNote], noteDuration);
+
+    // to distinguish the notes, set a minimum time between them.
+    // the note's duration + 30% seems to work well:
+    int pauseBetweenNotes = noteDuration * 1.30;
+    delay(pauseBetweenNotes);
+    // stop the tone playing:
+    noTone(8);
+  }
+}
+
 ////////////////////// FUCTIONS TO MANAGE COMM //////////////////////
 void send_message(struct Message* m)
 {
@@ -28,65 +105,59 @@ void send_debug_message(struct Message* m){
  */
 char read_input(struct Message* m)
 {
-  //send_debug_string("i'm in the reading input function");
+  ////send_debug_string("i'm in the reading input function");
   static enum Reading_states f_m_state = message_begin;
   static unsigned char data_read = 0;
   while(Serial.available() > 0){
-    send_debug_string("There is stuff in the buffer to read");
+    //send_debug_string("There is stuff in the buffer to read");
     //First of all i check if the message i'm reading already won't be broken at next read
     unsigned char input = (unsigned char) Serial.peek(); //returns next character in buffer but does not delete it
-
-    if(f_m_state == message_begin && input != 0xff){
-      send_debug_string("Not getting an 0xff!");
-      struct Message mm = {m_debug_flag, 0, 1, &input};
-      send_debug_message(&mm);
-      
-    }
     
     if(f_m_state != message_begin && input == 0xff){
       f_m_state = message_begin;
-      send_debug_string("A new message started before the previous one finished");
+      //send_debug_string("A new message started before the previous one finished");
+      Message_in_discarded(8);
       return message_discarded;
     }
 
     //Here i begin reading the actual message
     input = (unsigned char) Serial.read();
     //char d[] = {(unsigned char) input, 0};
-    //send_debug_string(d);
+    ////send_debug_string(d);
     if(f_m_state == data_reading && input == 0xfe && data_read != m->data_size){
       f_m_state = message_begin;
-      send_debug_string("THe message finished before the reading was finished");
+      //send_debug_string("THe message finished before the reading was finished");
       return message_discarded;
     }
     
     if(f_m_state == message_begin && input == 0xff){
       f_m_state = flags_read;
-      send_debug_string("New message in input");
+      //send_debug_string("New message in input");
       continue;
     }
     
     if(f_m_state == flags_read){
       m->flags = input;
       f_m_state = device_id_read;
-      send_debug_string("Flags read");
+      //send_debug_string("Flags read");
       continue;
     }
     if(f_m_state == device_id_read){
       m->device_id = input;
       f_m_state = data_size_read;
-      send_debug_string("device_id read");
+      //send_debug_string("device_id read");
       continue;
     }
     if(f_m_state == data_size_read){
       m->data_size = input;
       f_m_state = data_reading;
       data_read = 0;
-      send_debug_string("Datasize read, starting reading input");
+      //send_debug_string("Datasize read, starting reading input");
       continue;
     }
     if(data_read == m->data_size && f_m_state == data_reading){
         f_m_state = message_end;
-        send_debug_string("The whole message was read, let's wait for the xFE byte");
+        //send_debug_string("The whole message was read, let's wait for the xFE byte");
       }
     if(f_m_state == data_reading && data_read != m->data_size ){        
       ((char*)m->data) [data_read++] = input; // NOTICE: post-increment -> https://www.geeksforgeeks.org/pre-increment-and-post-increment-in-c/
@@ -95,12 +166,12 @@ char read_input(struct Message* m)
     if(f_m_state == message_end && input == 0xfe){
       f_m_state = message_begin;
       if(data_read != m->data_size){
-        send_debug_string("The datasize and the data read are not maching despite we reached the 0xfe");
-        send_debug_message(m);
+        //send_debug_string("The datasize and the data read are not maching despite we reached the 0xfe");
+        //send_debug_message(m);
         return message_discarded;
       }
-      send_debug_string("Message finished! This is the message:");
-      send_debug_message(m);
+      //send_debug_string("Message finished! This is the message:");
+      //send_debug_message(m);
       return message_done;
     }
   }
@@ -113,7 +184,7 @@ void device_start_initialization(char* data_type, bool actuator)
   struct Message m = {(m_init_flag | (actuator == true ? m_on_actuator_flag : 0)), 0, (unsigned char) strlen(data_type), data_type};
   send_message(&m);
   //char flag_char[] = {(m_init_flag | (actuator == true ? m_on_actuator_flag : 0)), 0};
-  //send_debug_string(flag_char);
+  ////send_debug_string(flag_char);
 }
 /*
  * Why am i making such a tiny an simple and almost useless function?
@@ -126,7 +197,6 @@ void device_initialization(struct Message* m, unsigned char* device_id_to_set)
 
 ////////////// MAIN LOOPS FOR DEVICES, MICROCONTROLLER ///////////////////////
 
-int ledState = LOW; 
 
 //This is the function that will manage the single device state
 enum controller_com_state device_run(Device* d,
@@ -134,12 +204,12 @@ enum controller_com_state device_run(Device* d,
             enum controller_com_state in_buffer_state,
             char reading_input_result
             )
-{
-  d->state == initializing ? digitalWrite(3, HIGH) : digitalWrite(3, LOW);
-  // Checking if device needs to be initialized and if i'm currently allowed to start initialization
+{  
+  // Checking if device needs to be initialized and if i'm currently allowed to start initialization 
   if(d->state == not_initialized && in_buffer_state == idling && d->actuator_func != NULL){
     device_start_initialization(d->datatype, true);
     d->state = initializing;
+    digitalWrite(4, HIGH);
     return initializing_device; // We tell to the microcontroller that i need to be the only one initializing rn
   }
   
@@ -151,9 +221,11 @@ enum controller_com_state device_run(Device* d,
   
   // If we get in input an initialization answer it completes the initialization
   if(d->state == initializing && reading_input_result == message_done && (in_buffer -> flags & m_init_flag) != 0){
+    if(d->actuator_func != NULL)
+      digitalWrite(4, LOW);
     device_initialization(in_buffer, &(d->device_id));
     d->state = initialized;
-    return idling;
+    return initialization_finished;
   }
   // If the incoming message was broken, we cannot tell if the initialization went well.
   // THIS MAY BE A WEAK POINT OF OUR STRATEGY. NEEDS TO BE HANDLED SOMEHOW BETTER THAN THIS
@@ -196,9 +268,12 @@ void controller_loop(Device* devices, unsigned char n_devices)
   char read_return_result = read_input(&mc_input_buffer); // I read the input and save the result of the read
   for(unsigned char i = 0; i < n_devices; i++){
     enum controller_com_state new_state = device_run(devices + i, &mc_input_buffer, com_state, read_return_result);
-    com_state = com_state == idling ? new_state : com_state; //devices + i it's the i-esimo pointer to device
+  
+    if(com_state == idling)
+      com_state = new_state;
+    if(com_state == initializing_device && new_state == initialization_finished)
+      com_state = idling;
   }
-  delay(100);
 }
 
 //void mc_loop(int (*data_collector) (char* data_buffer))
