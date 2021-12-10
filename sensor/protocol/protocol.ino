@@ -1,5 +1,8 @@
 #include  "protocol.h"
 
+int ledState = LOW;
+int ledPin = 4;
+
 void* sensor_1 (unsigned char* return_data_size)
 {
   static unsigned long previousMillis = 0;
@@ -159,13 +162,17 @@ void* sensor_11 (unsigned char* return_data_size)
 
 unsigned char actuator_1 (void* data_received)
 {
-  static char c[] = {'A','t','t','u','a','t','o',0};
+  //send_debug_string("hello");
+  ledState = !ledState;
+  digitalWrite(ledPin,ledState);
   return 0;
 }
 
 unsigned char actuator_2 (void* data_received)
 {
-  static char c[] = {'A','t','t','u','a','t','o',0};
+  //send_debug_string("hello");
+  ledState = !ledState;
+  digitalWrite(ledPin,ledState);
   return 0;
 }
 //////////////////////// GLOBAL VARS //////////////////////////////
@@ -195,7 +202,6 @@ Device devices[] = {
                      //new_device(sensor_1, actuator_1, string_type)
                    };
 
-int ledPin = 4;
 void setup() {
    Serial.begin(9600);
    pinMode(ledPin, OUTPUT);
@@ -203,5 +209,5 @@ void setup() {
 
 void loop() {
 
-  controller_loop(devices, 11);
+  controller_loop(devices, 9);
 }

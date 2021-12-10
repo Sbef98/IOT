@@ -190,7 +190,6 @@ struct device {
 #define new_sensor(sensor_func, datatype) {(sensor_func), NULL, not_initialized, 0, (datatype)}
 #define new_actuator(actuator_func, datatype) {NULL, (actuator_func), not_initialized, 0, (datatype)}
 
-
 ////////////////////// FUNCTIONS //////////////////////////
 
 /*
