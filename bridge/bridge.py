@@ -68,7 +68,7 @@ class Bridge():
                         # append
                         self.inbuffer.append (lastchar)
 
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 60):
+            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 30):
             # query the cloud every minute for new Data for the actuators
                 self.lastQuery = datetime.utcnow()
                 self.queryForNewActuatorValues()
@@ -144,6 +144,7 @@ class Bridge():
             else:
                 flags = 32 + 128
                 self.actuators.append(device_id)
+                print("Added actuator")
 
             data = createDeviceInitializationMessage(flags, device_id)
             
@@ -178,13 +179,19 @@ class Bridge():
             print("Debug: Wanted to send the following data to the cloud: ", data_json)
 
     def queryForNewActuatorValues(self):
+        #print(self.actuators[0])
+        print("length of actuator list", len(self.actuators))
         data_json = {}
         data_json['actuator_num'] = str(len(self.actuators))
         data_json['actuators'] = [str(actuator) for actuator in self.actuators]
         response = requests.post(self.cloud + '/getNewValues', json=data_json)
 
         # expecting json like {'actuator_number' : 'actuator_value'}
+        print("Queried cloud for new Values for actuators")
+
         actuators = response.json()
+
+        print("Answer:", actuators)
 
         for actuator in actuators:
             value = actuators[actuator]

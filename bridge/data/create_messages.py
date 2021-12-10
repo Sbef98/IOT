@@ -3,10 +3,10 @@ def createMessageForArduino(flags, device_id, datasize, data):
 	# Note: datasize > 1 needs to be fixed
 	message = b'\xff'
 	message = message + bytes([flags])
-	message = message + bytes([device_id])
+	message = message + bytes([int(device_id)])
 	message = message + bytes([datasize])
 	if(datasize > 0):
-		message = message + bytes([data])
+		message = message + bytes([int(data)])
 	message = message + b'\xfe'
 	print("Message to be send to arduino: ", message," with length: ", len(message))
 

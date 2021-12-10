@@ -100,16 +100,19 @@ def addinlist():
 @app.route('/getNewValues', methods=['POST'])
 def getNewValues():
     json_data = request.get_json()
+    print(json_data)
 
     actuator_number = int(json_data['actuator_num'])
     actuator_list = json_data['actuators']
 
     json_answer = {}
+    print("number of actuators:", actuator_number)
 
     for i in range(actuator_number):
         actuator = Actuator.query.get(actuator_list[i])
         if (actuator.datatype == 'string'):
-            json_answer[str(actuator.id)] = "hello"
+            json_answer[str(actuator.id)] = "11"
+    print(json_answer)
     return json_answer
 
 if __name__ == '__main__':
