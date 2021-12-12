@@ -1,19 +1,45 @@
 
 def createMessageForArduino(flags, device_id, datasize, data):
-	# Note: datasize > 1 needs to be fixed
+	# prepare data, datasize depends whether we are working on
+	# strings or not and therefor calculate it again
+
+	byteData, datasize = getBytesForData(data)
+
 	message = b'\xff'
-	message = message + bytes([flags])
-	message = message + bytes([int(device_id)])
-	message = message + bytes([datasize])
+	message += bytes([flags])
+	message += bytes([int(device_id)])
+	message += bytes([datasize])
 	if(datasize > 0):
-		message = message + bytes([int(data)])
-	message = message + b'\xfe'
+		message += byteData
+	message += b'\xfe'
 	print("Message to be send to arduino: ", message," with length: ", len(message))
 
 	return message
 
 def createDeviceInitializationMessage(flags, device_id):
-	return createMessageForArduino(flags=flags, device_id=device_id, datasize=0, data={})
+	return createMessageForArduino(flags=flags, device_id=device_id, datasize=0, data=[])
 
 def createActuatorNewValueMessage(device_id, data):
 	return createMessageForArduino(flags=32, device_id=device_id, datasize=len(int(data)), data=data)
+
+def getBytesForData(data):
+	newData = b''
+	datasize = 0
+	if isinstance(data, list):
+		for item in data:
+			newDataPoint, datasizeForPoint = getBytesForDatapoint(item)
+			newData += newDataPoint
+			datasize += datasizeForPoint
+	else:
+		newData, datasize = getBytesForDatapoint(data)
+
+	return (newData, datasize)
+
+def getBytesForDatapoint(datapoint):
+	# handle integer and strings differently
+	try:
+		newBytes = bytes([int(datapoint)])
+	except:
+		newBytes = str.encode(datapoint)
+
+	return (newBytes, len(newBytes))
