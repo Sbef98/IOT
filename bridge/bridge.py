@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
+import asyncio
 from data import *
-from datetime import datetime
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
-import serial
-import serial.tools.list_ports
+from handler import SerialHandler
 from sys import platform
 import time
 
@@ -20,59 +19,25 @@ class Bridge():
         self.sensors = []
         self.actuators = []
 
-        self.lastQuery = datetime.utcnow()
-
-        # open serial port
-        self.ser = None
-        print('list of available ports: ')
-
-        ports = serial.tools.list_ports.comports()
-        self.portname=None
-        
-        # finding correct serial port and connecting
-        for port in ports:
-            print (port.device)
-            print (port.description)
-            if (platform == 'linux' and ('seeeduino' or 'usb' or 'leonardo') in port.description.lower()) or (platform == 'win32' and 'com4' in port.description.lower()):
-                self.portname = port.device
-                print ("connecting to " + self.portname)
-                break
-        try:
-            if self.portname:
-                print("Portname:" + self.portname)
-                # self.ser = serial.Serial(self.portname, 9600, timeout=0)
-                self.ser =serial.Serial(self.portname)
-                print("self.ser:" + self.ser.name)
-        except:
-            self.ser = None
-            print("not connected")
+        self.serialHandler = SerialHandler(self)
 
         # internal input buffer for serial
         self.inbuffer = []
         self.state = "addValueForSensor"
 
+    async def main():
+        callables = [self.serialHandler.loop, self.queryForNewActuatorValues]
+        await asyncio.gather(*map(asyncio.to_thread, callables))
+
     def loop(self):
-        # infinite loop for serial managing
-        
-        while (True):
-            # look for a byte from serial
-            if self.ser:
-                if self.ser.in_waiting>0:
-                    # data available from the serial port
-                    lastchar=self.ser.read(1)
 
-                    if lastchar==b'\xfe' or len(self.inbuffer) > 250: #EOL
-                        print("\nValue received")
-                        self.useData()
-                        self.inbuffer =[]
-                    else:
-                        # append
-                        self.inbuffer.append (lastchar)
-
-            if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 10):
-            # query the cloud every minute for new Data for the actuators
-                self.lastQuery = datetime.utcnow()
-                self.queryForNewActuatorValues()
+        loop = asyncio.get_event_loop()
+        try:
+            asyncio.run(main())
+        except KeyboardInterrupt:
+            pass
+        finally:
+            loop.close()
 
     def useData(self):
         # I have received a line from the serial port. I can use it
@@ -180,8 +145,9 @@ class Bridge():
             print("Debug: Wanted to send the following data to the cloud: ", data_json)
 
     def queryForNewActuatorValues(self):
-        #print(self.actuators[0])
-        print("length of actuator list", len(self.actuators))
+        
+        sleep(30)
+
         data_json = {}
         data_json['actuator_num'] = str(len(self.actuators))
         data_json['actuators'] = [str(actuator) for actuator in self.actuators]
