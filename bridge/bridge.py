@@ -116,7 +116,7 @@ class Bridge():
 
             data = createDeviceInitializationMessage(flags, device_id)
             
-            self.ser.write(data)
+            self.serialHandler.write(data)
             print("Sent device_id to arduino",  device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)

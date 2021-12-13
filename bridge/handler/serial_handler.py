@@ -34,7 +34,6 @@ class SerialHandler():
 
     def loop(self):
         while (True):
-            print("yay looking for serial")
             # look for a byte from serial
             if self.ser:
                 if self.ser.in_waiting>0:
@@ -48,3 +47,6 @@ class SerialHandler():
                     else:
                         # append
                         self.inbuffer.append (lastchar)
+
+    def write(self, bytes):
+        self.ser.write(bytes)

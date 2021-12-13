@@ -110,7 +110,7 @@ def getNewValues():
     for i in range(actuator_number):
         actuator = Actuator.query.get(actuator_list[i])
         if (actuator.datatype == 'string'):
-            json_answer[str(actuator.id)] = "11"
+            json_answer[str(actuator.id)] = "hello"
     print(json_answer)
     return json_answer
 
