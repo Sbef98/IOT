@@ -147,11 +147,10 @@ char read_input(struct Message* m)
 
     //Here i begin reading the actual message
     input = (unsigned char) Serial.read();
-    
     if(f_m_state == data_reading && input == 0xfe && data_read != m->data_size){
       f_m_state = message_begin;
       //send_debug_string("THe message finished before the reading was finished");
-      Messa_wrong_datasize(8);
+      Message_wrong_datasize(8);
       return message_discarded;
     }
     

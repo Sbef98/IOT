@@ -72,7 +72,7 @@ class Bridge():
             if ((datetime.utcnow() - self.lastQuery).total_seconds() >= 30):
             # query the cloud every minute for new Data for the actuators
                 self.lastQuery = datetime.utcnow()
-                self.queryForNewActuatorValues()
+#                self.queryForNewActuatorValues()
 
     def useData(self):
         # I have received a line from the serial port. I can use it
