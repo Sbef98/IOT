@@ -6,7 +6,6 @@ from data import *
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
 from handler import SerialHandler
-from sys import platform
 import time
 
 class Bridge():
@@ -25,7 +24,7 @@ class Bridge():
         self.inbuffer = []
         self.state = "addValueForSensor"
 
-    async def main():
+    async def asyncFunctions(self):
         callables = [self.serialHandler.loop, self.queryForNewActuatorValues]
         await asyncio.gather(*map(asyncio.to_thread, callables))
 
@@ -33,14 +32,17 @@ class Bridge():
 
         loop = asyncio.get_event_loop()
         try:
-            asyncio.run(main())
+            asyncio.run(self.asyncFunctions())
         except KeyboardInterrupt:
             pass
         finally:
             loop.close()
 
-    def useData(self):
+    def useData(self, data):
         # I have received a line from the serial port. I can use it
+
+        self.inbuffer = data
+
         if len(self.inbuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
             print("Warning: Message is shorter than minimum size")
             return False
@@ -145,28 +147,28 @@ class Bridge():
             print("Debug: Wanted to send the following data to the cloud: ", data_json)
 
     def queryForNewActuatorValues(self):
-        
-        sleep(30)
+        while True:
+            time.sleep(30)
 
-        data_json = {}
-        data_json['actuator_num'] = str(len(self.actuators))
-        data_json['actuators'] = [str(actuator) for actuator in self.actuators]
-        response = requests.post(self.cloud + '/getNewValues', json=data_json)
+            data_json = {}
+            data_json['actuator_num'] = str(len(self.actuators))
+            data_json['actuators'] = [str(actuator) for actuator in self.actuators]
+            response = requests.post(self.cloud + '/getNewValues', json=data_json)
 
-        # expecting json like {'actuator_number' : 'actuator_value'}
-        print("Queried cloud for new Values for actuators")
+            # expecting json like {'actuator_number' : 'actuator_value'}
+            print("Queried cloud for new Values for actuators")
 
-        actuators = response.json()
+            actuators = response.json()
 
-        print("Answer:", actuators)
+            print("Answer:", actuators)
 
-        for actuator in actuators:
-            value = actuators[actuator]
-            data = createActuatorNewValueMessage(actuator, value)
-            self.ser.write(data)
+            for actuator in actuators:
+                value = actuators[actuator]
+                data = createActuatorNewValueMessage(actuator, value)
+                self.ser.write(data)
 
-            print("Sent actuator: ", actuator, "value: ", value)
-            time.sleep(5)
+                print("Sent actuator: ", actuator, "value: ", value)
+                time.sleep(5)
 
 if __name__ == '__main__':
     br=Bridge()
