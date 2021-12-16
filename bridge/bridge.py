@@ -25,6 +25,7 @@ class Bridge():
         self.state = "addValueForSensor"
 
     async def asyncFunctions(self):
+        # insert loops of communication handlers here
         callables = [self.serialHandler.loop, self.queryForNewActuatorValues]
         await asyncio.gather(*map(asyncio.to_thread, callables))
 

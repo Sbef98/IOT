@@ -2,10 +2,33 @@ import serial
 import serial.tools.list_ports
 from sys import platform
 
-class SerialHandler():
+
+class CommunicationHandler():
+# A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
+# different channels
 
     def __init__(self, bridge):
+    # In the initialization the Communication handler can start setting up everything to receive communication
+
+        # in order for the handler to speak to the bridge or to call a method there we store a reference to the bridge
         self.bridge = bridge
+
+        # set up communication requirements here
+
+    def loop(self):
+    # The loop needs to be endless in order to run concurrently with the other jobs in the bridge
+        while (True):
+            pass
+
+    def write(self, data):
+    # receives data already in the correct format and sends it via the intended communication channel
+        pass
+
+class SerialHandler(CommunicationHandler):
+
+    def __init__(self, bridge):
+        super().__init__(bridge)
+
         self.inbuffer = []
 
         # open serial port
