@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import asyncio
-from data import *
+import time
+
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
+from data import *
 from handler import SerialHandler
-import time
+
 
 class Bridge():
 

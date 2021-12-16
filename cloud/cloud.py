@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from config import Config
 from datetime import datetime
-from flask import Flask
-from flask import render_template, request
+
+from config import Config
+from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
 appname = "Shopmaker"

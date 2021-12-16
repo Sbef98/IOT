@@ -1,6 +1,7 @@
+from sys import platform
+
 import serial
 import serial.tools.list_ports
-from sys import platform
 
 
 class CommunicationHandler():
