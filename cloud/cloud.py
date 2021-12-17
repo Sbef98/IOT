@@ -52,6 +52,17 @@ class Sensorfeed(db.Model):
         db.session.add(self)
         db.session.commit()
 
+class Person(db.Model):
+    __tablename__ = 'person'
+    id = db.Column('personid', db.Integer, primary_key = True)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
+    gender = db.Column(db.String, nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
+
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
@@ -131,6 +142,32 @@ def addinlist():
         print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
 
     return str(0) # function must return something that is not an integer
+
+@app.route('/addpredicted', methods=['POST'])
+def addPredictedValues():
+    # getting the predicted ages and genders from edge computing via image captioning
+    json_data = request.get_json()
+
+    # TODO: put into a method
+    sensorid = int(json_data['sensorid'])
+    sensor = Sensor.query.get(sensorid)
+
+
+    if (not sensor):
+        print("Warning: Sensor not found with id: ", sensorid)
+        return "Given id for sensor not in database", 400
+
+    datasize = int(json_data['datasize'])
+    data_list = json_data['data']
+
+    # Expecting data in the format: {..., data: {'Gender' : 'M', 'Age' : '23'}}
+
+    for i in range(datasize):
+        data_item = data_list[i]
+        gender = data_item['Gender']
+        age = data_item['Age']
+        person = Person(gender=gender, age=age)
+        person.addToDatabase() 
 
 @app.route('/getNewValues', methods=['POST'])
 def getNewValues():
