@@ -63,6 +63,16 @@ class Person(db.Model):
         db.session.add(self)
         db.session.commit()
 
+def queryForSensor(sensorid):
+    sensor = Sensor.query.get(sensorid)
+
+
+    if (not sensor):
+        print("Warning: Sensor not found with id: ", sensorid)
+        return "Given id for sensor not in database", 400, None
+    return "Ok", 200, sensor
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
@@ -125,21 +135,18 @@ def addDevice():
 def addinlist():
     json_data = request.get_json()
 
-    bridgeid = int(json_data['bridgeid'])
-    sensorid = int(json_data['sensorid'])
-    sensor = Sensor.query.filter_by(local_sensor_id=sensorid, bridge_id=bridgeid).first_or_404()
+    text, statuscode, sensor = queryForSensor(int(json_data['sensorid']))
 
-    if (not sensor):
-        print("Warning: Sensor not found with id: ", sensorid)
-        return "Given id for sensor not in database", 400
+    if (statuscode == 400): return text, statuscode
 
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
+    bridgeid = json_data['bridgeid']
 
     for i in range(datasize):
         sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
         sf.addToDatabase()
-        print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
+        print("for bridge: ", bridgeid, "and for sensor: ", sensor.id , "added value: ", data_list[i])
 
     return str(0) # function must return something that is not an integer
 
@@ -148,14 +155,9 @@ def addPredictedValues():
     # getting the predicted ages and genders from edge computing via image captioning
     json_data = request.get_json()
 
-    # TODO: put into a method
-    sensorid = int(json_data['sensorid'])
-    sensor = Sensor.query.get(sensorid)
+    text, statuscode, sensor = queryForSensor(int(json_data['sensorid']))
 
-
-    if (not sensor):
-        print("Warning: Sensor not found with id: ", sensorid)
-        return "Given id for sensor not in database", 400
+    if (statuscode == 400): return text, statuscode
 
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
