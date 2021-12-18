@@ -18,6 +18,7 @@ class Actuator(db.Model):
     __tablename__ = 'actuator'
     id = db.Column('id', db.Integer, primary_key = True)
     bridge_id = db.Column(db.Integer, nullable = False)
+    local_actuator_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
     datatype = db.Column(db.String(100), nullable = False)
 
     def addToDatabase(self):
@@ -28,6 +29,7 @@ class Sensor(db.Model):
     __tablename__ = 'sensor'
     id = db.Column('id', db.Integer, primary_key = True)
     bridge_id = db.Column(db.Integer, nullable = False)
+    local_sensor_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
     datatype = db.Column(db.String(100), nullable = False)
 
     def addToDatabase(self):
@@ -63,15 +65,28 @@ def test():
 def addDevice():
     json_data = request.get_json()
     device_id = 0
+    bridgeid = json_data['bridgeid']
 
     if (json_data['sensor'] == 'True'):
-        sensor = Sensor(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
-        sensor.addToDatabase()
-        device_id = sensor.id
+        if (Sensor.query.filter_by(bridge_id=bridgeid).count() == 0):
+            # needed for first sensor
+            sensor = Sensor(bridge_id=bridgeid, local_sensor_id=0, datatype=json_data['datatype'])
+            sensor.addToDatabase()
+        else:
+            last_sensor = Sensor.query.filter_by(bridge_id=bridgeid).order_by(Sensor.local_sensor_id.desc()).limit(1).first_or_404()
+            print(last_sensor)
+            sensor = Sensor(bridge_id=bridgeid, local_sensor_id=(last_sensor.local_sensor_id + 1), datatype=json_data['datatype'])
+            sensor.addToDatabase()
+            device_id = sensor.local_sensor_id
     else:
-        actuator = Actuator(bridge_id = json_data['bridge'], datatype=json_data['datatype'])
-        actuator.addToDatabase()
-        device_id = actuator.id
+        if(Actuator.query.filter_by(bridge_id=bridgeid).count() == 0):
+            actuator = Actuator(bridge_id=bridgeid, local_actuator_id=0, datatype=json_data['datatype'])
+            actuator.addToDatabase()
+        else:
+            last_actuator = Actuator.query.filter_by(bridge_id=bridgeid).order_by(Actuator.local_actuator_id.desc()).limit(1).first_or_404()
+            actuator = Actuator(bridge_id=bridgeid, local_actuator_id=(last_actuator.local_actuator_id + 1), datatype=json_data['datatype'])
+            actuator.addToDatabase()
+            device_id = actuator.local_actuator_id
 
     return str(device_id)
 
@@ -79,8 +94,9 @@ def addDevice():
 def addinlist():
     json_data = request.get_json()
 
+    bridgeid = int(json_data['bridgeid'])
     sensorid = int(json_data['sensorid'])
-    sensor = Sensor.query.get(sensorid)
+    sensor = Sensor.query.filter_by(local_sensor_id=sensorid, bridge_id=bridgeid).first_or_404()
 
     if (not sensor):
         print("Warning: Sensor not found with id: ", sensorid)
@@ -92,7 +108,7 @@ def addinlist():
     for i in range(datasize):
         sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
         sf.addToDatabase()
-        print("for sensor: ", sensorid, "added value: ", data_list[i])
+        print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
 
     return str(0) # function must return something that is not an integer
 
@@ -101,6 +117,8 @@ def getNewValues():
     json_data = request.get_json()
     print(json_data)
 
+    bridgeid = json_data['bridgeid']
+
     actuator_number = int(json_data['actuator_num'])
     actuator_list = json_data['actuators']
 
@@ -108,9 +126,12 @@ def getNewValues():
     print("number of actuators:", actuator_number)
 
     for i in range(actuator_number):
-        actuator = Actuator.query.get(actuator_list[i])
+        actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_actuator_id=actuator_list[i]).first_or_404()
         if (actuator.datatype == 'string'):
-            json_answer[str(actuator.id)] = "hello"
+            value ="hello"
+        else:
+            value = "2"
+        json_answer[str(actuator.id)] = value
     print(json_answer)
     return json_answer
 
