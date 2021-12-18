@@ -24,6 +24,19 @@ class Bridge():
         self.inbuffer = []
         self.state = "addValueForSensor"
 
+        self.sendInitializeMessageToCloud()
+
+    def sendInitializeMessageToCloud(self):
+        data_json = {}
+        data_json['bridgeid'] = str(self.name)
+        self.sendToCloud('initializebridge', data_json)
+        print("Initialized Bridge")
+
+    def sendToCloud(self, path, json_data):
+        response = requests.post(self.cloud + '/' + path, json=json_data)
+        return response
+
+
     async def asyncFunctions(self):
         # insert loops of communication handlers here
         callables = [self.serialHandler.loop, self.queryForNewActuatorValues]
@@ -104,8 +117,12 @@ class Bridge():
         print("json_data for initilization: ", data_json)
 
         if (not self.debug):
-            response = requests.post(self.cloud + '/adddevice', json=data_json)
+            response = self.sendToCloud('adddevice', data_json)
             device_id = int(response.content) # TODO: answer in a nicer machine readable way
+
+            if(device_id > 253):
+                print("Warning: to many devices initialized for that bridge and device id to high for serial communication")
+                return
             
             if (sensor):
                 flags = 128
@@ -141,7 +158,7 @@ class Bridge():
         data_json = currentData.getJSON(self.name)
 
         if(not self.debug):
-            response = requests.post(self.cloud + '/addvalue', json=data_json)
+            response = self.sendToCloud('addvalue', data_json)
             if (not response.ok):
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
@@ -155,7 +172,7 @@ class Bridge():
             data_json['bridgeid'] = str(self.name)
             data_json['actuator_num'] = str(len(self.actuators))
             data_json['actuators'] = [str(actuator) for actuator in self.actuators]
-            response = requests.post(self.cloud + '/getNewValues', json=data_json)
+            response = self.sendToCloud('getNewValues', data_json)
 
             # expecting json like {'actuator_number' : 'actuator_value'}
             print("Queried cloud for new Values for actuators")
