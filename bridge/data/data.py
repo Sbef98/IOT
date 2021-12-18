@@ -10,9 +10,10 @@ class DataSet():
 	def addValue(self, value):
 		self.data.append(value)
 
-	def getJSON(self):
+	def getJSON(self, bridge_name):
 		# creating json like data
 		data = {}
+		data['bridgeid'] = str(bridge_name)
 		data['sensorid'] = str(self.sensorid)
 		data['datasize'] = str(self.datasize())
 		data['data'] = [str(datapoint) for datapoint in self.data]

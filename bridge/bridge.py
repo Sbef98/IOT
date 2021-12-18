@@ -96,7 +96,7 @@ class Bridge():
             datatype += self.inbuffer[4 + i].decode("ascii")
 
         data_json = {}
-        data_json['bridge'] = str(self.name)
+        data_json['bridgeid'] = str(self.name)
 
         data_json['sensor'] = "True" if sensor else "False"
     
@@ -138,7 +138,7 @@ class Bridge():
                 print("Datasize not matching: ", datasize, len(self.inbuffer))
 
         # send the read data as json to the cloud
-        data_json = currentData.getJSON()
+        data_json = currentData.getJSON(self.name)
 
         if(not self.debug):
             response = requests.post(self.cloud + '/addvalue', json=data_json)
@@ -152,6 +152,7 @@ class Bridge():
             time.sleep(30)
 
             data_json = {}
+            data_json['bridgeid'] = str(self.name)
             data_json['actuator_num'] = str(len(self.actuators))
             data_json['actuators'] = [str(actuator) for actuator in self.actuators]
             response = requests.post(self.cloud + '/getNewValues', json=data_json)
