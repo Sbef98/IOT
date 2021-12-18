@@ -42,8 +42,8 @@ class Sensorfeed(db.Model):
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
-    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id'), 
-        foreign_keys = [sensor_id], lazy = True)
+    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id', cascade='all, delete-orphan'), 
+        foreign_keys = [sensor_id])
 
     def addToDatabase(self):
         db.session.add(self)
@@ -60,6 +60,23 @@ def test():
     db.session.add(sensor)   
     db.session.commit()
     return str(sensor.id)
+
+@app.route('/initializebridge', methods=['POST'])
+def initializeBridge():
+    # delete all objects saved for this bridge so far since it was turned of in between and will start initializing now
+    json_data = request.get_json()
+    bridgeid = json_data['bridgeid']
+
+    # TODO: change database that all associated sensorfeeds to the deleted sensors also get deleted
+
+    deleted_sensors = Sensor.__table__.delete().where(Sensor.bridge_id == bridgeid)
+    db.session.execute(deleted_sensors)
+
+    deleted_actuators = Actuator.__table__.delete().where(Actuator.bridge_id == bridgeid)
+    db.session.execute(deleted_actuators)
+
+    db.session.commit()
+    return '200'
 
 @app.route('/adddevice', methods=['POST'])
 def addDevice():
