@@ -19,7 +19,7 @@ def createDeviceInitializationMessage(device_id, sensor):
 	if(sensor):
 		return createMessageForArduino(flags=128, device_id=device_id, datasize=0, data=[])
 	else:
-		return createMessageForArduino(flags=128 + 32, device_id=device_id, datasize=0, data=[])
+		return createMessageForArduino(flags=(128 + 32), device_id=device_id, datasize=0, data=[])
 
 def createActuatorNewValueMessage(device_id, data):
 	return createMessageForArduino(flags=32, device_id=device_id, datasize=len(data), data=data)
@@ -48,17 +48,17 @@ def getBytesForDatapoint(datapoint):
 
 class ProtocolBuffer:
 	def __init__(self):
-		self.inbuffer = []
+		self.inBuffer = []
 
-	def readByte(self, byte):
-		if byte==b'\xfe' or len(self.inBuffer) > 250: #EOL
+	def readChar(self, receivedByte):
+		if (receivedByte == b'\xfe') or (len(self.inBuffer) > 250): #EOL
 			return True
 		else:
 			# append
-			self.inBuffer.append (byte)
+			self.inBuffer.append (receivedByte)
 			return False
 
-	def checkMessageCorrectness(self):
+	def isMessageCorrect(self):
 		if len(self.inBuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
 			print("Warning: Message is shorter than minimum size")
 			return False
@@ -81,6 +81,8 @@ class ProtocolBuffer:
 
 	def getMessageAsText(self):
 		message = ""
+		print("len inbuffer", len(self.inBuffer))
+		print(self.inBuffer)
 		for i in range(2, len(self.inBuffer)):
 			try:
 				message += self.inBuffer[i].decode("ascii")
@@ -104,7 +106,7 @@ class ProtocolBuffer:
 		return int.from_bytes(self.inBuffer[3], byteorder='little')
 
 	def getDataType(self):
-		datasize = self.getDataSize(self.inBuffer)
+		datasize = self.getDataSize()
 		datatype = ""
 		for i in range(datasize):
 			print(self.inBuffer[4+i])
@@ -118,5 +120,5 @@ class ProtocolBuffer:
 		return int.from_bytes(self.inBuffer[4 + position], byteorder='little')
 
 	def cleanBuffer(self):
-		self.inbuffer = []
+		self.inBuffer = []
 

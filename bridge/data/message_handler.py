@@ -1,7 +1,7 @@
 from sys import platform
-from bridge.data.data import DataSet
-from bridge.data.message_management import ProtocolBuffer, checkMessageCorrectness, createDeviceInitializationMessage, getDataSize, getDataType, getFlags, getMessage, getMessageAsText, getSensorId, getValue, isActuator, isDebugMessage, isSensor, readByte
+from data import DataSet, ProtocolBuffer, createDeviceInitializationMessage
 
+import requests
 import serial
 import serial.tools.list_ports
 import socket
@@ -50,6 +50,7 @@ class SerialHandler(CommunicationHandler):
     def __init__(self, bridge):
         super().__init__(bridge)
 
+        self.debug = False
         self.inbuffer = ProtocolBuffer()
         # open serial port
         self.ser = None
@@ -82,9 +83,10 @@ class SerialHandler(CommunicationHandler):
                 if self.ser.in_waiting>0:
                     # data available from the serial port
                     lastchar=self.ser.read(1)
-                    message_ready = readByte(lastchar)
+                    
+                    message_ready = self.inbuffer.readChar(lastchar)
 
-                    if(message_ready == True):
+                    if message_ready:
                         print("\nValue received")
                         self.useData()
                         self.inbuffer.cleanBuffer()
@@ -94,7 +96,7 @@ class SerialHandler(CommunicationHandler):
 
     def useData(self):
         
-        if(self.inbuffer.checkMessageCorrectness()):
+        if not self.inbuffer.isMessageCorrect():
             return False
 
         print("Reading flags")
@@ -103,12 +105,12 @@ class SerialHandler(CommunicationHandler):
             self.debug = True
             print("Debug message")
 
-        print("Flags: ", self.inbuffer.getFlags(self.inbuffer))
+        print("Flags: ", self.inbuffer.getFlags())
 
         message = self.inbuffer.getMessageAsText()
         print("Message as text: " + message)
 
-        if self.inbuffer.isDebugMessage(): # check whether first bit of flags is set
+        if self.inbuffer.isInitializationMessage(): # check whether first bit of flags is set
             if self.inbuffer.isActuator():
                 self.state = "newActuator"
                 print("Initialize Actuator")
@@ -127,11 +129,13 @@ class SerialHandler(CommunicationHandler):
         # read string from inbuffer until fe
         # FF Flags sensorid=0 datasize datatype_as_string FE
         datasize = self.inbuffer.getDataSize()
+        print(datasize)
         
         datatype = self.inbuffer.getDataType()
+        print(datatype)
 
         data_json = {}
-        data_json['bridge'] = str(self.name)
+        data_json['bridge'] = str(self.bridge.name)
 
         data_json['sensor'] = "True" if sensor else "False"
     
@@ -139,16 +143,21 @@ class SerialHandler(CommunicationHandler):
         print("json_data for initilization: ", data_json)
 
         if (not self.debug):
-            response = requests.post(self.cloud + '/adddevice', json=data_json)
+            print(self.bridge.cloud + '/adddevice')
+            response = requests.post(self.bridge.cloud + '/adddevice', json=data_json)
             device_id = int(response.content) # TODO: answer in a nicer machine readable way
+            print("device_id: ", device_id)
             
             if (sensor):
-                self.sensors.append(device_id)
+                self.bridge.sensors.append(device_id)
+                print("Added sensor")
             else:
-                self.actuators.append(device_id)
+                self.bridge.actuators.append(device_id)
                 print("Added actuator")
 
             data = createDeviceInitializationMessage(device_id, sensor)
+
+            print(data)
             
             self.write(data) #check syntax
             print("Sent device_id to arduino",  device_id)
@@ -163,7 +172,7 @@ class SerialHandler(CommunicationHandler):
 
         for i in range (datasize):
             try:
-                val = self.inbuffer.getValue(self.inbuffer)
+                val = self.inbuffer.getValue(i)
                 currentData.addValue(val)
                 strval = "Sensor %d: %d " % (sensorID, val)
                 print(strval)
@@ -174,7 +183,7 @@ class SerialHandler(CommunicationHandler):
         data_json = currentData.getJSON()
 
         if(not self.debug):
-            response = requests.post(self.cloud + '/addvalue', json=data_json)
+            response = requests.post(self.bridge.cloud + '/addvalue', json=data_json)
             if (not response.ok):
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
