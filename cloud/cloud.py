@@ -24,7 +24,7 @@ class Actuator(db.Model):
     __tablename__ = 'actuator'
     id = db.Column('id', db.Integer, primary_key = True)
     bridge_id = db.Column(db.Integer, nullable = False)
-    local_actuator_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
+    local_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
     datatype = db.Column(db.String(100), nullable = False)
     # both stored as string in order to all possible datatypes
     last_value = db.Column(db.String(100), nullable = True)
@@ -38,7 +38,7 @@ class Sensor(db.Model):
     __tablename__ = 'sensor'
     id = db.Column('id', db.Integer, primary_key = True)
     bridge_id = db.Column(db.Integer, nullable = False)
-    local_sensor_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
+    local_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
     datatype = db.Column(db.String(100), nullable = False)
 
     def addToDatabase(self):
@@ -65,6 +65,14 @@ def page_not_found(error):
 @app.route('/')
 def overview():
     return render_template('index.html')
+
+@app.route('/sensors')
+def sensoroverview():
+    return render_template('deviceoverview.html', sensors = Sensor.query.all())
+
+@app.route('/actuators')
+def actuatoroverview():
+    return render_template('deviceoverview.html', sensors = Actuator.query.all())
 
 @app.route('/test')
 def test():
@@ -102,23 +110,23 @@ def addDevice():
     if (json_data['sensor'] == 'True'):
         if (Sensor.query.filter_by(bridge_id=bridgeid).count() == 0):
             # needed for first sensor
-            sensor = Sensor(bridge_id=bridgeid, local_sensor_id=0, datatype=json_data['datatype'])
+            sensor = Sensor(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             sensor.addToDatabase()
         else:
-            last_sensor = Sensor.query.filter_by(bridge_id=bridgeid).order_by(Sensor.local_sensor_id.desc()).limit(1).first_or_404()
+            last_sensor = Sensor.query.filter_by(bridge_id=bridgeid).order_by(Sensor.local_id.desc()).limit(1).first_or_404()
             print(last_sensor)
-            sensor = Sensor(bridge_id=bridgeid, local_sensor_id=(last_sensor.local_sensor_id + 1), datatype=json_data['datatype'])
+            sensor = Sensor(bridge_id=bridgeid, local_id=(last_sensor.local_id + 1), datatype=json_data['datatype'])
             sensor.addToDatabase()
-            device_id = sensor.local_sensor_id
+            device_id = sensor.local_id
     else:
         if(Actuator.query.filter_by(bridge_id=bridgeid).count() == 0):
-            actuator = Actuator(bridge_id=bridgeid, local_actuator_id=0, datatype=json_data['datatype'])
+            actuator = Actuator(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             actuator.addToDatabase()
         else:
-            last_actuator = Actuator.query.filter_by(bridge_id=bridgeid).order_by(Actuator.local_actuator_id.desc()).limit(1).first_or_404()
-            actuator = Actuator(bridge_id=bridgeid, local_actuator_id=(last_actuator.local_actuator_id + 1), datatype=json_data['datatype'])
+            last_actuator = Actuator.query.filter_by(bridge_id=bridgeid).order_by(Actuator.local_id.desc()).limit(1).first_or_404()
+            actuator = Actuator(bridge_id=bridgeid, local_id=(last_actuator.local_id + 1), datatype=json_data['datatype'])
             actuator.addToDatabase()
-            device_id = actuator.local_actuator_id
+            device_id = actuator.local_id
 
     return str(device_id)
 
@@ -128,7 +136,7 @@ def addinlist():
 
     bridgeid = int(json_data['bridgeid'])
     sensorid = int(json_data['sensorid'])
-    sensor = Sensor.query.filter_by(local_sensor_id=sensorid, bridge_id=bridgeid).first_or_404()
+    sensor = Sensor.query.filter_by(local_id=sensorid, bridge_id=bridgeid).first_or_404()
 
     if (not sensor):
         print("Warning: Sensor not found with id: ", sensorid)
