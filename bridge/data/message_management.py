@@ -113,7 +113,7 @@ class ProtocolBuffer:
 			datatype += self.inBuffer[4 + i].decode("ascii")
 		return datatype
 
-	def getSensorId(self):
+	def getDeviceId(self):
 		return int.from_bytes(self.inBuffer[2], byteorder='little')
 
 	def getValue(self, position):

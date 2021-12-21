@@ -190,6 +190,8 @@ class Bridge():
                 time.sleep(5)
 
 if __name__ == '__main__':
-    br=Bridge()
-    br.setup()
-    br.loop()            
+    #br=Bridge()
+    #br.setup()
+    #br.loop()
+    hand = SocketHandler(None, 8080, "localhost")
+    hand.loop()            

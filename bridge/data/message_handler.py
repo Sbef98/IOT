@@ -4,7 +4,7 @@ from data import DataSet, ProtocolBuffer, createDeviceInitializationMessage
 import requests
 import serial
 import serial.tools.list_ports
-import socket
+import socket, selectors, types
 
 class CommunicationHandler():
 # A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
@@ -21,7 +21,7 @@ class CommunicationHandler():
         while (True):
             pass
 
-    def write(self, data):
+    def write(self, data, device_id = None):
     # receives data already in the correct format and sends it via the intended communication channel
         pass
 
@@ -88,7 +88,7 @@ class CommunicationHandler():
 
             print(data)
 
-            self.write(data) #check syntax
+            self.write(data, device_id) #check syntax
             print("Sent device_id to arduino",  device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
@@ -125,16 +125,69 @@ class SocketHandler(CommunicationHandler):
         super().__init__(bridge)
         self.host = host
         self.port = port
+        self.sel = selectors.DefaultSelector()
 
-        with socket.socket(socker.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((self.host,self.port))
-            s.listen()
-            print("Listening on:",(self.host,self.port))
+        self.lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+        self.lsock.bind((host, port))
+        self.lsock.listen()
+        print('listening on', (host, port))
+        self.lsock.setblocking(False)
+        self.sel.register(self.lsock, selectors.EVENT_READ, data=None)
+        
+        self.deviceConnections = {}
+        
+    def accept_wrapper(self, sock):
+        conn, addr = sock.accept()  # Should be ready to read
+        print('accepted connection from', addr)
+        conn.setblocking(False)
+        data = types.SimpleNamespace(addr=addr, outb = ProtocolBuffer())
+        events = selectors.EVENT_READ | selectors.EVENT_WRITE
+        self.sel.register(conn, events, data)
+        
+    def service_connection(self, key, mask):
+        sock = key.fileobj
+        data = key.data
+        if mask & selectors.EVENT_READ:
+            recv_data = sock.recv(1)  # Should be ready to read
+            if recv_data:
+                if(data.outb.readChar(recv_data)):
+                    print("\nValue received")
+                    self.inbuffer = data.outb
+                    self.useData()
+                    self.deviceConnections[self.inbuffer.getDeviceId()] = sock
+                    self.inbuffer.cleanBuffer()
+                    data.outb.cleanBuffer()
+            else:
+                key_list = list(self.deviceConnections.keys())
+                value_list = list(self.deviceConnections.values())
+                
+                key = key_list[value_list.index(sock)]
+                
+                print('closing connection to', data.addr, "Device id:", key)
+                self.deviceConnections.pop(key)
+                self.sel.unregister(sock)
+                sock.close()
+                
+        # if mask & selectors.EVENT_WRITE:
+        #     if data.outb:
+        #         print('echoing', repr(data.outb), 'to', data.addr)
+        #         sent = sock.send(data.outb)  # Should be ready to write
+        #         data.outb = data.outb[sent:]
 
     def loop(self):
-        pass
-    def write(self,data):
-        pass
+        while(True):
+            events = self.sel.select(timeout=None)
+            for key, mask in events:
+                if key.data is None:
+                    self.accept_wrapper(key.fileobj)
+                else:
+                    self.service_connection(key, mask)
+                    
+    def write(self,data, device_id):
+        print("Sending data")
+        sock = self.deviceConnections[device_id]
+        sock.send(data)
 
 
 class SerialHandler(CommunicationHandler):
@@ -181,6 +234,9 @@ class SerialHandler(CommunicationHandler):
                         self.useData()
                         self.inbuffer.cleanBuffer()
 
-    def write(self, bytes):
+    def write(self, bytes, device_id = None):
         self.ser.write(bytes)
 
+if __name__ == "__main__":
+    hand = SocketHandler(None, 8080, "localhost")
+    SocketHandler.loop()
