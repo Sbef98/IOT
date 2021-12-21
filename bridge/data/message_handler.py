@@ -135,7 +135,7 @@ class SerialHandler(CommunicationHandler):
         print(datatype)
 
         data_json = {}
-        data_json['bridge'] = str(self.bridge.name)
+        data_json['bridgeid'] = str(self.bridge.name)
 
         data_json['sensor'] = "True" if sensor else "False"
     
@@ -180,7 +180,7 @@ class SerialHandler(CommunicationHandler):
                 print("Datasize not matching: ", datasize, len(self.inbuffer))
 
         # send the read data as json to the cloud
-        data_json = currentData.getJSON()
+        data_json = currentData.getJSON(self.bridge.name)
 
         if(not self.debug):
             response = requests.post(self.bridge.cloud + '/addvalue', json=data_json)
