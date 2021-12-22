@@ -19,10 +19,8 @@ class ProtocolValsIterator:
 
 class ProtocolBuffer:
 
-    def __init__(self, beginTrigger = b'\xff', endTrigger = b'\xfe'):
+    def __init__(self):
         self.inBuffer = emptyProtocolInBuffer()
-        self.beginTrigger = beginTrigger
-        self.endTrigger = endTrigger
 
     def readChar(self, val):
         """
@@ -30,10 +28,10 @@ class ProtocolBuffer:
         needs to be implemented better!
         """
 
-        if (val == self.endTrigger): #EOLi
+        if (val == b'\xfe'): #EOLi
             return True
 
-        elif (val == self.beginTrigger):
+        elif (val == b'\xff'):
             self.inBuffer = emptyProtocolInBuffer()
             return False
 
@@ -65,13 +63,11 @@ class ProtocolBuffer:
     def addValue(self, val):
         """ Meant to be used to add a value to an existing message """
 
-        if(val == self.beginTrigger):
-            exceptionString = "Cannot add " + self.beginTrigger + " value within data section"
-            raise Exception(exceptionString)
+        if(val == b'\xff'):
+            raise Exception("Cannot add \xff value within data section")
 
-        elif(val == self.endTrigger):
-            excceptionString = "Cannot add " + self.endTrigger + " value within data section"
-            raise Exception(exceptionString)
+        elif(val == b'\xfe'):
+            raise Exception("Cannot add \xfe value within data section")
 
         elif(self.inBuffer.data_length > 250):
             raise Exception("Adding too many bytes to the data section!")
@@ -148,16 +144,13 @@ class ProtocolBuffer:
     def getDataAsList(self):
         return self.inBuffer.data
 
-    def getDataAsString(self, debug = False):
+    def getDataAsString(self):
         message = ""
         for i in range(0, len(self.inBuffer.data)):
-            if(self.inBuffer.data[i] == 0): #in this case it's a 0 ending string, so it actually finishes here!
-                return message
             try:
                 message += self.inBuffer.data[i].decode("ascii")
             except:
-                if(debug == True):
-                    print("Wrong character for:",i,self.inBuffer.data[i])
+                print("Wrong character for:",i,self.inBuffer.data[i])
         return message
 
     def flushBuffer(self):
@@ -187,7 +180,6 @@ class ProtocolBuffer:
         stringozza += "Device ID: " + str(self.getDeviceId()) + "\n\r"
         stringozza += "Data Length: " + str(self.getDataSize()) + "\n\r"
         stringozza += "Data: " + str(self.getDataAsList()) + "\n\r"
-        return stringozza
 
 
 if __name__ == "__main__":
@@ -197,11 +189,11 @@ if __name__ == "__main__":
     buff.readChar(128+32)
     buff.readChar(10)
     buff.readChar(5)
-    buff.readChar(b'c')
-    buff.readChar(b'i')
-    buff.readChar(b'a')
-    buff.readChar(b'o')
-    buff.readChar(0)
+    buff.readChar(b'67')
+    buff.readChar(b'73')
+    buff.readChar(b'65')
+    buff.readChar(b'79')
+    buff.readChar(b'0')
 
     if(buff.readChar(b'\xfe')):
         print(buff.toString())

@@ -62,7 +62,7 @@ class ProtocolBuffer:
 		if len(self.inBuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
 			print("Warning: Message is shorter than minimum size")
 			return False
-			
+
 			# split parts
 		if self.inBuffer[0] != b'\xff': # first byte
 			print("Warning: Start of sent data is incorrect")
