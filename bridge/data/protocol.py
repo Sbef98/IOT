@@ -189,6 +189,12 @@ class ProtocolBuffer:
         stringozza += "Data: " + str(self.getDataAsList()) + "\n\r"
         return stringozza
 
+class InitializationBuffer(ProtocolBuffer):
+    def __init__(self):
+        super().__init__()
+    def getDataType():
+        return self.gedDataAsString()
+
 
 if __name__ == "__main__":
     buff = ProtocolBuffer()

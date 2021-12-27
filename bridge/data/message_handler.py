@@ -1,5 +1,7 @@
 from sys import platform
-from data import DataSet, ProtocolBuffer, createDeviceInitializationMessage
+from data import DataSet, createDeviceInitializationMessage, ProtocolBuffer
+
+#from protocol import ProtocolBuffer
 
 import requests
 import serial
@@ -35,9 +37,7 @@ class CommunicationHandler():
             self.debug = True
             print("Debug message")
 
-        print("Flags: ", self.inbuffer.getFlags())
-
-        message = self.inbuffer.getMessageAsText()
+        message = self.inbuffer.toString()
         print("Message as text: " + message)
 
         if self.inbuffer.isInitializationMessage(): # check whether first bit of flags is set
@@ -94,7 +94,7 @@ class CommunicationHandler():
             print("Debug: Wanted to initialize sensor:", data_json)
 
     def addValueForSensor(self):
-        sensorID = self.inbuffer.getSensorId()
+        sensorID = self.inbuffer.getDeviceId()
         currentData = DataSet(sensorID)
 
         datasize = self.inbuffer.getDataSize()
@@ -106,7 +106,7 @@ class CommunicationHandler():
                 strval = "Sensor %d: %d " % (sensorID, val)
                 print(strval)
             except:
-                print("Datasize not matching: ", datasize, len(self.inbuffer))
+                print("Datasize not matching:")
 
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.bridge.name)
@@ -232,7 +232,6 @@ class SerialHandler(CommunicationHandler):
                     if message_ready:
                         print("\nValue received")
                         self.useData()
-                        self.inbuffer.cleanBuffer()
 
     def write(self, bytes, device_id = None):
         self.ser.write(bytes)
