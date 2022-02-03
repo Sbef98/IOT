@@ -3,13 +3,10 @@
 from datetime import datetime
 
 from config import Config
-from flask import render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, flash, redirect
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask import Flask
-from flask import render_template, request
-from flask_sqlalchemy import SQLAlchemy
 
 appname = "Shopmaker"
 app = Flask(appname)
@@ -95,7 +92,7 @@ def sensoroverview():
     bridgedictionary = collectBridgeMetrics(sensors)
     bridges = [int(key) for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('deviceoverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
+    return render_template('sensoroverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
 
 @app.route('/actuators')
 def actuatoroverview():
@@ -106,7 +103,12 @@ def actuatoroverview():
     bridgedictionary = collectBridgeMetrics(actuators)
     bridges = [key for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('deviceoverview.html', devices = actuators, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Actuators')
+    return render_template('actuatoroverview.html', devices = actuators, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Actuators')
+
+@app.route('/actuating/<int:actuator_id>')
+def actuating(actuator_id):
+    actuator = Actuator.query.filter_by(id = actuator_id).first_or_404()
+    return render_template('actuating.html', actuator=actuator)
 
 @app.route('/test')
 def test():
@@ -214,6 +216,20 @@ def getNewValues():
     db.session.commit()
     print(json_answer)
     return json_answer
+
+@app.route('/actuate/<int:actuator_id>', methods=['POST'])
+def actuate(actuator_id):
+    value = request.form['value']
+    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404() #in order to not try to send things to the bridge where no actuator exists
+    if not value:
+        flash('Nothing sent as value was empty :(')
+        return render_template('actuating.html', actuator=actuator)
+    json_answer = {}
+    json_answer[str(actuator_id)] = value
+    # need to be send to bridge
+    #return json_answer
+    flash('Successfully sent value!')
+    return render_template('actuating.html', actuator=actuator)
 
 if __name__ == '__main__':
 
