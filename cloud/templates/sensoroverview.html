@@ -1,0 +1,18 @@
+{% extends "deviceoverview.html" %}
+
+{% block table%}
+<table class="table table-bordered table-hover table-sm">
+		<tr>
+			<th> Bridge id </th>
+			<th> Local id </th>
+			<th> Datatype </th>
+		{% for device in devices %}
+		<tr>
+			<td>{{device.bridge_id}}</td>
+			<td>{{device.local_id}} </td>
+			<td>{{device.datatype}}</td>
+		</tr>
+	{% endfor %}
+		
+</table>
+{% endblock %}

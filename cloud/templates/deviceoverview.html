@@ -2,7 +2,7 @@
 {% block title %}IoT Shopmaker{% endblock %}
 
 {% block header %} 
-	<h3> {{devicetype}} connected to the bridge at the moment
+	<h3> {{devicetype}} which are currently connected to the bridge
 	</h3>
 {% endblock %}
 
@@ -67,19 +67,6 @@
 		});
 </script>
 
-	<table class="table table table-bordered table-hover table-sm">
-		<tr>
-			<th> Bridge id </th>
-			<th> Local id </th>
-			<th> Datatype </th>
-		{% for device in devices %}
-		<tr>
-			<td>{{device.bridge_id}}</td>
-			<td>{{device.local_id}} </td>
-			<td>{{device.datatype}}</td>
-		</tr>
-	{% endfor %}
-		
-	</table>
+	{% block table %} {% endblock %}
 	
 {% endblock %}
