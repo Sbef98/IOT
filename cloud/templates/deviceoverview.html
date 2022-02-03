@@ -13,7 +13,7 @@
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 <script type="text/javascript">
-		var xValues = ["1"]; //TODO: should use bridges not hardcoded
+		var xValues = eval('{{bridges}}')
 		//Diagram does not work if there is only one value
 		if (xValues.length == 1){
 			xValues = [""].concat(xValues);
@@ -41,7 +41,7 @@
 		  }
 		});
 
-		var xValues = ["string"];
+		var xValues = ["string"]; // TODO: do not hardcode
 		//Diagram does not work if there is only one value
 		if (xValues.length == 1){
 			xValues = [""].concat(xValues);
@@ -67,16 +67,16 @@
 		});
 </script>
 
-	<table>
+	<table class="table table table-bordered table-hover table-sm">
 		<tr>
 			<th> Bridge id </th>
 			<th> Local id </th>
 			<th> Datatype </th>
 		{% for device in devices %}
 		<tr>
-			<th>{{device.bridge_id}}</th>
-			<th>{{device.local_id}} </th>
-			<th>{{device.datatype}}</th>
+			<td>{{device.bridge_id}}</td>
+			<td>{{device.local_id}} </td>
+			<td>{{device.datatype}}</td>
 		</tr>
 	{% endfor %}
 		

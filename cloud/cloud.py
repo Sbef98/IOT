@@ -91,7 +91,7 @@ def sensoroverview():
     types = [key for key in typedictionary.keys()]
     values = [value for value in typedictionary.values()]
     bridgedictionary = collectBridgeMetrics(sensors)
-    bridges = [key for key in bridgedictionary.keys()]
+    bridges = [int(key) for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
     return render_template('deviceoverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
 
