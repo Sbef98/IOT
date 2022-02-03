@@ -67,6 +67,15 @@ def collectDeviceMetrics(devices):
             typedict[device.datatype] = 1
     return typedict
 
+def collectBridgeMetrics(devices):
+    bridgedict = {}
+    for device in devices:
+        if device.bridge_id in bridgedict:
+            bridgedict[device.bridge_id] += 1
+        else:
+            bridgedict[device.bridge_id] = 1
+    return bridgedict
+
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
@@ -81,7 +90,10 @@ def sensoroverview():
     typedictionary = collectDeviceMetrics(sensors)
     types = [key for key in typedictionary.keys()]
     values = [value for value in typedictionary.values()]
-    return render_template('deviceoverview.html', devices = sensors, devtypes = types, values = values, devicetype = 'Sensors')
+    bridgedictionary = collectBridgeMetrics(sensors)
+    bridges = [key for key in bridgedictionary.keys()]
+    numbers = [value for value in bridgedictionary.values()]
+    return render_template('deviceoverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
 
 @app.route('/actuators')
 def actuatoroverview():
@@ -89,7 +101,10 @@ def actuatoroverview():
     typedictionary = collectDeviceMetrics(actuators)
     types = [key for key in typedictionary.keys()]
     values = [value for value in typedictionary.values()]
-    return render_template('deviceoverview.html', devices = actuators, devtypes = types, values = values, devicetype = 'Actuators')
+    bridgedictionary = collectBridgeMetrics(actuators)
+    bridges = [key for key in bridgedictionary.keys()]
+    numbers = [value for value in bridgedictionary.values()]
+    return render_template('deviceoverview.html', devices = actuators, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Actuators')
 
 @app.route('/test')
 def test():
