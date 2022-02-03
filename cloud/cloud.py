@@ -58,6 +58,15 @@ class Sensorfeed(db.Model):
         db.session.add(self)
         db.session.commit()
 
+def collectDeviceMetrics(devices):
+    typedict = {}
+    for device in devices:
+        if device.datatype in typedict:
+            typedict[device.datatype] += 1
+        else:
+            typedict[device.datatype] = 1
+    return typedict
+
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
@@ -68,11 +77,19 @@ def overview():
 
 @app.route('/sensors')
 def sensoroverview():
-    return render_template('deviceoverview.html', sensors = Sensor.query.all())
+    sensors = Sensor.query.all()
+    typedictionary = collectDeviceMetrics(sensors)
+    types = [key for key in typedictionary.keys()]
+    values = [value for value in typedictionary.values()]
+    return render_template('deviceoverview.html', devices = sensors, devtypes = types, values = values, devicetype = 'Sensors')
 
 @app.route('/actuators')
 def actuatoroverview():
-    return render_template('deviceoverview.html', sensors = Actuator.query.all())
+    actuators = Actuator.query.all()
+    typedictionary = collectDeviceMetrics(actuators)
+    types = [key for key in typedictionary.keys()]
+    values = [value for value in typedictionary.values()]
+    return render_template('deviceoverview.html', devices = actuators, devtypes = types, values = values, devicetype = 'Actuators')
 
 @app.route('/test')
 def test():
