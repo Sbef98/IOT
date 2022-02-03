@@ -82,7 +82,9 @@ def page_not_found(error):
 
 @app.route('/')
 def overview():
-    return render_template('index.html')
+    deviceNumber = Sensor.query.count() + Actuator.query.count()
+    bridgeNumber = 1 #TODO: query correctly DB
+    return render_template('index.html', devices = deviceNumber, bridges = bridgeNumber)
 
 @app.route('/sensors')
 def sensoroverview():
