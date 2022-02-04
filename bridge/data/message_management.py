@@ -155,7 +155,7 @@ class ProtocolBuffer():
         needs to be implemented better!
         """
 
-        if (val == self.endTrigger): #EOLi
+        if val == self.endTrigger: #EOLi
             return True
 
         elif val == self.beginTrigger:
@@ -172,7 +172,7 @@ class ProtocolBuffer():
             else:
                 self.addValue(val)
 
-            if(self.inBuffer.data_length > 250): #EOL
+            if self.inBuffer.data_length > 250: #EOL
                 return True
 
             else:
@@ -182,7 +182,7 @@ class ProtocolBuffer():
         return ProtocolsValsIterator(self.inBuffer)
 
     def getValue(self, pos):
-        if(self.inBuffer.data_length <= pos or pos < 0):
+        if self.inBuffer.data_length <= pos or pos < 0:
             raise IndexError
         else:
             return self.inBuffer.data[pos]
@@ -207,12 +207,12 @@ class ProtocolBuffer():
 
     def setInitializationFlag(self, boolean):
         if self.inBuffer.flags & (1 << 7) == 128:  # Checking if it was already set
-            if(boolean == True):                    # If yes leave as is
+            if boolean == True:                    # If yes leave as is
                 return
             else:
                 self.inBuffer.flags -= 128          # Else take off the flag
         else:
-            if(boolean == True):                    # Same here but inverted
+            if boolean == True:                    # Same here but inverted
                 self.inBuffer.flags += 128
             else:
                 return
@@ -243,14 +243,14 @@ class ProtocolBuffer():
             return False
 
 
-    def setActuatorFlag(self,boolean):
+    def setActuatorFlag(self, boolean):
         if self.inBuffer.flags & (1 << 5) == 32:  # Checking if it was already set
-            if(boolean == True):                    # If yes leave as is
+            if boolean == True:                    # If yes leave as is
                 return
             else:
                 self.inBuffer.flags -= 32          # Else take off the flag
         else:
-            if(boolean == True):                    # Same here but inverted
+            if boolean == True:                    # Same here but inverted
                 self.inBuffer.flags += 32
             else:
                 return
@@ -262,12 +262,15 @@ class ProtocolBuffer():
 
 
     def setDeviceId(self, device_id):
+        # device_id must be int
         self.inBuffer.device_id = device_id
 
     def getDeviceId(self):
+        # device_id is already saved as integer in order to be easier comparable
         return self.inBuffer.device_id
 
     def getDataSize(self):
+        # be careful as the first byte is the data length in data
         return self.inBuffer.data_length
 
     def getDataAsList(self):
@@ -290,19 +293,19 @@ class ProtocolBuffer():
 
     def isMessageCorrect(self):
 
-        if(self.inBuffer.flags < 0):
+        if self.inBuffer.flags < 0:
             print("no Flags")
             return False
-        print("got into that method")
-        if(self.inBuffer.device_id < 0):
+
+        if self.inBuffer.device_id < 0:
             print("noDeviceId")
             return False
 
-        if(self.inBuffer.data_length < 0):
+        if self.inBuffer.data_length < 0:
             print("noDataLength")
             return False
 
-        if(self.inBuffer.data_length != len(self.inBuffer.data)):
+        if self.inBuffer.data_length != len(self.inBuffer.data):
             print("incorrectDataLength")
             return False
 
@@ -325,8 +328,9 @@ class ProtocolBuffer():
 class InitializationBuffer(ProtocolBuffer):
     def __init__(self):
         super().__init__()
-    def getDataType():
-        return self.gedDataAsString()
+
+    def getDataType(self):
+        return self.getDataAsString()
 
 
 if __name__ == "__main__":

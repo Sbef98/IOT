@@ -98,16 +98,16 @@ class CommunicationHandler():
         sensorID = self.inbuffer.getDeviceId()
         currentData = DataSet(sensorID)
 
-        datasize = self.inbuffer.getDataSize()
+        datasize = self.inbuffer.getDataSize() - 1
 
-        for i in range (datasize):
+        for i in range(datasize):
             try:
-                val = self.inbuffer.getValue(i)
+                val = int.from_bytes(self.inbuffer.getValue(i), byteorder='little')
                 currentData.addValue(val)
                 strval = "Sensor %d: %d " % (sensorID, val)
                 print(strval)
             except:
-                print("Datasize not matching:")
+                print("Datasize not matching")
 
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.bridge.name)

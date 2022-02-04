@@ -140,12 +140,12 @@ class Bridge():
             print("Debug: Wanted to initialize sensor:", data_json)
 
     def addValueForSensor(self):
-        sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
+        sensorID = self.inbuffer.getDeviceId()
         currentData = DataSet(sensorID)
 
-        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+        datasize = self.inbuffer.getDataSize() - 1
 
-        for i in range (datasize):
+        for i in range(datasize):
             try:
                 val = int.from_bytes(self.inbuffer[4 + i], byteorder='little')
                 currentData.addValue(val)
