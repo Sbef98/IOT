@@ -128,7 +128,7 @@ class ProtocolBuffer:
 def emptyProtocolInBuffer():
     return types.SimpleNamespace(data = [], flags = -1, device_id = -1, data_length = 0)
 
-class ProtocolValsIterator:
+class ProtocolValsIterator():
     """ Useful for iterating over the values inside this buffer """
     def __init__(self, buff):
         self._buffer = buff
@@ -142,7 +142,7 @@ class ProtocolValsIterator:
             raise StopIteration
 
 
-class ProtocolBuffer:
+class ProtocolBuffer():
 
     def __init__(self, beginTrigger = b'\xff', endTrigger = b'\xfe'):
         self.inBuffer = emptyProtocolInBuffer()
@@ -158,16 +158,16 @@ class ProtocolBuffer:
         if (val == self.endTrigger): #EOLi
             return True
 
-        elif (val == self.beginTrigger):
+        elif val == self.beginTrigger:
             self.inBuffer = emptyProtocolInBuffer()
             return False
 
         else:
-            if(self.inBuffer.flags == -1):
-                self.inBuffer.flags = val
+            if self.inBuffer.flags == -1:
+                self.inBuffer.flags = int.from_bytes(val, byteorder='little')
 
-            elif(self.inBuffer.device_id == -1):
-                self.setDeviceId(val)
+            elif self.inBuffer.device_id == -1:
+                self.setDeviceId(int.from_bytes(val, byteorder='little'))
 
             else:
                 self.addValue(val)
@@ -190,15 +190,15 @@ class ProtocolBuffer:
     def addValue(self, val):
         """ Meant to be used to add a value to an existing message """
 
-        if(val == self.beginTrigger):
+        if val == self.beginTrigger:
             exceptionString = "Cannot add " + self.beginTrigger + " value within data section"
             raise Exception(exceptionString)
 
-        elif(val == self.endTrigger):
-            excceptionString = "Cannot add " + self.endTrigger + " value within data section"
+        elif val == self.endTrigger:
+            exceptionString = "Cannot add " + self.endTrigger + " value within data section"
             raise Exception(exceptionString)
 
-        elif(self.inBuffer.data_length > 250):
+        elif self.inBuffer.data_length > 250:
             raise Exception("Adding too many bytes to the data section!")
 
         else:
@@ -275,44 +275,52 @@ class ProtocolBuffer:
 
     def getDataAsString(self, debug = False):
         message = ""
-        for i in range(0, len(self.inBuffer.data)):
-            if(self.inBuffer.data[i] == 0): #in this case it's a 0 ending string, so it actually finishes here!
+        for i in range(1, self.getDataSize()): #First value is currently the datasize that the bridge sent
+            if self.inBuffer.data[i] == 0: #in this case it's a 0 ending string, so it actually finishes here!
                 return message
             try:
                 message += self.inBuffer.data[i].decode("ascii")
             except:
-                if(debug == True):
+                if debug == True:
                     print("Wrong character for:",i,self.inBuffer.data[i])
         return message
 
     def flushBuffer(self):
         self.inBuffer = emptyProtocolInBuffer()
 
-    def isMessageCorret(self):
+    def isMessageCorrect(self):
 
         if(self.inBuffer.flags < 0):
-            return False, "noFlags"
-
+            print("no Flags")
+            return False
+        print("got into that method")
         if(self.inBuffer.device_id < 0):
-            return False, "noDeviceId"
+            print("noDeviceId")
+            return False
 
         if(self.inBuffer.data_length < 0):
-            return False, "noDataLength"
+            print("noDataLength")
+            return False
 
         if(self.inBuffer.data_length != len(self.inBuffer.data)):
-            return False, "incorrectDataLength"
+            print("incorrectDataLength")
+            return False
 
         return True
 
     def toString(self):
-        stringozza = "Flags active: \n\r"
-        stringozza += "\t - Debug: " + str(self.isDebugMessage()) +"\n\r"
-        stringozza += "\t - Actuator: " + str(self.isInitializationMessage()) +"\n\r"
-        stringozza += "\t - Initialization: " + str(self.isActuatorMessage()) +"\n\r"
-        stringozza += "Device ID: " + str(self.getDeviceId()) + "\n\r"
-        stringozza += "Data Length: " + str(self.getDataSize()) + "\n\r"
-        stringozza += "Data: " + str(self.getDataAsList()) + "\n\r"
-        return stringozza
+        message = "Flags active: \n\r"
+        message += "\t - Debug: " + str(self.isDebugMessage()) +"\n\r"
+        message += "\t - Actuator: " + str(self.isActuatorMessage()) +"\n\r"
+        message += "\t - Initialization: " + str(self.isInitializationMessage()) +"\n\r"
+        message += "Device ID: " + str(self.getDeviceId()) + "\n\r"
+        message += "Data Length: " + str(self.getDataSize()) + "\n\r"
+        message += "Data: " + str(self.getDataAsList()) + "\n\r"
+        return message
+
+    def getDataType(self):
+        if self.isInitializationMessage():
+            return self.getDataAsString()
 
 class InitializationBuffer(ProtocolBuffer):
     def __init__(self):

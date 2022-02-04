@@ -29,6 +29,7 @@ class CommunicationHandler():
 
     def useData(self):
         if not self.inbuffer.isMessageCorrect():
+            print("no inbuffer")
             return False
 
         print("Reading flags")
@@ -38,10 +39,10 @@ class CommunicationHandler():
             print("Debug message")
 
         message = self.inbuffer.toString()
-        print("Message as text: " + message)
+        print(message)
 
         if self.inbuffer.isInitializationMessage(): # check whether first bit of flags is set
-            if self.inbuffer.isActuator():
+            if self.inbuffer.isActuatorMessage():
                 self.state = "newActuator"
                 print("Initialize Actuator")
                 self.initializeDevice(sensor=False)
@@ -88,7 +89,7 @@ class CommunicationHandler():
 
             print(data)
 
-            self.write(data, device_id) #check syntax
+            self.write(data, device_id)
             print("Sent device_id to arduino",  device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
@@ -184,7 +185,7 @@ class SocketHandler(CommunicationHandler):
                 else:
                     self.service_connection(key, mask)
                     
-    def write(self,data, device_id):
+    def write(self, data, device_id):
         print("Sending data")
         sock = self.deviceConnections[device_id]
         sock.send(data)
@@ -233,8 +234,9 @@ class SerialHandler(CommunicationHandler):
                         print("\nValue received")
                         self.useData()
 
-    def write(self, bytes, device_id = None):
-        self.ser.write(bytes)
+
+    def write(self, bytesToSend, device_id=None):
+        self.ser.write(bytesToSend)
 
 if __name__ == "__main__":
     hand = SocketHandler(None, 8080, "localhost")
