@@ -20,6 +20,9 @@ class Actuator(db.Model):
     bridge_id = db.Column(db.Integer, nullable = False)
     local_actuator_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
     datatype = db.Column(db.String(100), nullable = False)
+    # both stored as string in order to all possible datatypes
+    last_value = db.Column(db.String(100), nullable = True)
+    next_value = db.Column(db.String(100), nullable = True)
 
     def addToDatabase(self):
         db.session.add(self)
@@ -144,17 +147,23 @@ def getNewValues():
 
     for i in range(actuator_number):
         actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_actuator_id=actuator_list[i]).first_or_404()
-        if (actuator.datatype == 'string'):
+        if(actuator.next_value == "None"):
+            value = actuator.next_value
+            actuator.next_value = "None"
+        elif (actuator.datatype == 'string'):
             value ="hello"
         else:
             value = "2"
+        actuator.last_value = str(value)
         json_answer[str(actuator.id)] = value
+        
+    db.session.commit()
     print(json_answer)
     return json_answer
 
 if __name__ == '__main__':
 
-    if True:  # first time (?)
+    if True:  #create database on first turn on
         db.create_all()
 
     port = 8000
