@@ -202,7 +202,7 @@ def getNewValues():
     print("number of actuators:", actuator_number)
 
     for i in range(actuator_number):
-        actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_actuator_id=actuator_list[i]).first_or_404()
+        actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_id=actuator_list[i]).first_or_404()
         if(actuator.next_value == "None"):
             value = actuator.next_value
             actuator.next_value = "None"
@@ -224,11 +224,9 @@ def actuate(actuator_id):
     if not value:
         flash('Nothing sent as value was empty :(')
         return render_template('actuating.html', actuator=actuator)
-    json_answer = {}
-    json_answer[str(actuator_id)] = value
-    # need to be send to bridge
-    #return json_answer
-    flash('Successfully sent value!')
+    actuator.next_value = value
+    db.session.commit()
+    flash('Success: Value will be send to actuator on next update!')
     return render_template('actuating.html', actuator=actuator)
 
 if __name__ == '__main__':

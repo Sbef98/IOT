@@ -10,9 +10,10 @@
 	<p class="text-md-center">If the chosen actuator is able to be manipulated manually then here is the view and the corresponding handles to change the values of the actuator. </p>
 
 	{% if actuator.datatype == 'string'	%}
+	<script type="text/javascript">console.log('{{actuator.last_value}}')</script>
 	<form method="post" action="{{url_for('actuate', actuator_id=actuator.id)}}" style="margin-left: .5em;">
 		  <label for="value">Enter a number:</label>
-		  <input type="number" id="value" name="value" min="1" max="5">
+		  <input type="string" id="value" name="value" min="1" max="5" value="{{actuator.last_value}}">
 		  <input type="submit" class="btn btn-secondary">
 	</form>
 	{% endif %}
