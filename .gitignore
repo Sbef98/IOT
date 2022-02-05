@@ -9,3 +9,7 @@ __pycache__/
 
 # Keys
 chiave
+
+# IDEA
+/.idea/
+*.iml
