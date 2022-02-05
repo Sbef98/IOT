@@ -2,11 +2,11 @@
 
 from datetime import datetime
 
-from config import Config
-from flask import Flask, render_template, request, jsonify, flash, redirect
+from flask import Flask, flash, jsonify, redirect, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+
+from config import Config
 
 appname = "Shopmaker"
 app = Flask(appname)
@@ -16,6 +16,7 @@ Bootstrap(app)
 
 # db creation
 db = SQLAlchemy(app)
+
 
 class Actuator(db.Model):
     __tablename__ = 'actuator'
@@ -31,6 +32,7 @@ class Actuator(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
 class Sensor(db.Model):
     __tablename__ = 'sensor'
     id = db.Column('id', db.Integer, primary_key = True)
@@ -42,18 +44,20 @@ class Sensor(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
 class Sensorfeed(db.Model):
     __tablename__ = 'sensorfeed'
     id = db.Column('feedid', db.Integer, primary_key = True)
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
     sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
-    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id', cascade='all, delete-orphan'), 
+    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id', cascade='all, delete-orphan'),
         foreign_keys = [sensor_id])
 
     def addToDatabase(self):
         db.session.add(self)
         db.session.commit()
+
 
 def collectDeviceMetrics(devices):
     typedict = {}
@@ -64,6 +68,7 @@ def collectDeviceMetrics(devices):
             typedict[device.datatype] = 1
     return typedict
 
+
 def collectBridgeMetrics(devices):
     bridgedict = {}
     for device in devices:
@@ -73,18 +78,21 @@ def collectBridgeMetrics(devices):
             bridgedict[device.bridge_id] = 1
     return bridgedict
 
+
 @app.errorhandler(404)
 def page_not_found(error):
     return 'Error', 404
 
+
 @app.route('/')
 def overview():
     deviceNumber = Sensor.query.count() + Actuator.query.count()
-    bridgeNumber = 1 #TODO: query correctly DB
+    bridgeNumber = 1 # TODO: query correctly DB
     return render_template('index.html', devices = deviceNumber, bridges = bridgeNumber)
 
+
 @app.route('/sensors')
-def sensoroverview():
+def sensorOverview():
     sensors = Sensor.query.all()
     typedictionary = collectDeviceMetrics(sensors)
     types = [key for key in typedictionary.keys()]
@@ -94,8 +102,9 @@ def sensoroverview():
     numbers = [value for value in bridgedictionary.values()]
     return render_template('sensoroverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
 
+
 @app.route('/actuators')
-def actuatoroverview():
+def actuatorOverview():
     actuators = Actuator.query.all()
     typedictionary = collectDeviceMetrics(actuators)
     types = [key for key in typedictionary.keys()]
@@ -105,10 +114,12 @@ def actuatoroverview():
     numbers = [value for value in bridgedictionary.values()]
     return render_template('actuatoroverview.html', devices = actuators, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Actuators')
 
+
 @app.route('/actuating/<int:actuator_id>')
 def actuating(actuator_id):
     actuator = Actuator.query.filter_by(id = actuator_id).first_or_404()
     return render_template('actuating.html', actuator=actuator)
+
 
 @app.route('/test')
 def test():
@@ -116,9 +127,10 @@ def test():
     sensor = Sensor(bridge_id = 1, datatype = "integer")
     actuator = Actuator(bridge_id = 1, datatype = "integer")
     db.session.add(sensor)
-    db.session.add(actuator)   
+    db.session.add(actuator)
     db.session.commit()
     return str(sensor.id)
+
 
 @app.route('/initializebridge', methods=['POST'])
 def initializeBridge():
@@ -137,14 +149,15 @@ def initializeBridge():
     db.session.commit()
     return '200'
 
+
 @app.route('/adddevice', methods=['POST'])
 def addDevice():
     json_data = request.get_json()
     device_id = 0
     bridgeid = json_data['bridgeid']
 
-    if (json_data['sensor'] == 'True'):
-        if (Sensor.query.filter_by(bridge_id=bridgeid).count() == 0):
+    if json_data['sensor'] == 'True':
+        if Sensor.query.filter_by(bridge_id=bridgeid).count() == 0:
             # needed for first sensor
             sensor = Sensor(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             sensor.addToDatabase()
@@ -155,7 +168,7 @@ def addDevice():
             sensor.addToDatabase()
             device_id = sensor.local_id
     else:
-        if(Actuator.query.filter_by(bridge_id=bridgeid).count() == 0):
+        if Actuator.query.filter_by(bridge_id=bridgeid).count() == 0:
             actuator = Actuator(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             actuator.addToDatabase()
         else:
@@ -166,15 +179,16 @@ def addDevice():
 
     return str(device_id)
 
+
 @app.route('/addvalue', methods=['POST'])
-def addinlist():
+def addInlist():
     json_data = request.get_json()
 
     bridgeid = int(json_data['bridgeid'])
     sensorid = int(json_data['sensorid'])
     sensor = Sensor.query.filter_by(local_id=sensorid, bridge_id=bridgeid).first_or_404()
 
-    if (not sensor):
+    if not sensor:
         print("Warning: Sensor not found with id: ", sensorid)
         return "Given id for sensor not in database", 400
 
@@ -187,6 +201,7 @@ def addinlist():
         print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
 
     return str(0) # function must return something that is not an integer
+
 
 @app.route('/getNewValues', methods=['POST'])
 def getNewValues():
@@ -203,19 +218,20 @@ def getNewValues():
 
     for i in range(actuator_number):
         actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_id=actuator_list[i]).first_or_404()
-        if(actuator.next_value == "None"):
+        if actuator.next_value == "None":
             value = actuator.next_value
             actuator.next_value = "None"
-        elif (actuator.datatype == 'string'):
-            value ="hello"
+        elif actuator.datatype == 'string':
+            value = "hello"
         else:
             value = "2"
         actuator.last_value = str(value)
         json_answer[str(actuator.id)] = value
-        
+
     db.session.commit()
     print(json_answer)
     return json_answer
+
 
 @app.route('/actuate/<int:actuator_id>', methods=['POST'])
 def actuate(actuator_id):
@@ -228,6 +244,7 @@ def actuate(actuator_id):
     db.session.commit()
     flash('Success: Value will be send to actuator on next update!')
     return render_template('actuating.html', actuator=actuator)
+
 
 if __name__ == '__main__':
 
