@@ -69,7 +69,7 @@ class Bridge:
 
         flags = int.from_bytes(self.inbuffer[1], byteorder='little')
 
-        if (flags & (1 << 6) == 64): # check whether second bit of flags is set
+        if flags & (1 << 6) == 64: # check whether second bit of flags is set
             self.debug = True
             print("Debug message")
 
@@ -83,8 +83,8 @@ class Bridge:
                 print("Print wrong character for: ",i , self.inbuffer[i])
         print("Message as text: " + message)
 
-        if (flags & (1 << 7) == 128): # check whether first bit of flags is set
-            if (flags & (1 << 5) == 32):
+        if flags & (1 << 7) == 128: # check whether first bit of flags is set
+            if flags & (1 << 5) == 32:
                 self.state = "newActuator"
                 print("Initialize Actuator")
                 self.initializeDevice(sensor=False)
@@ -116,15 +116,15 @@ class Bridge:
         data_json['datatype'] = datatype
         print("json_data for initilization: ", data_json)
 
-        if (not self.debug):
+        if not self.debug:
             response = self.sendToCloud('adddevice', data_json)
             device_id = int(response.content) # TODO: answer in a nicer machine readable way
 
-            if(device_id > 253):
+            if device_id > 253:
                 print("Warning: to many devices initialized for that bridge and device id to high for serial communication")
                 return
             
-            if (sensor):
+            if sensor:
                 flags = 128
                 self.sensors.append(device_id)
             else:
@@ -157,9 +157,9 @@ class Bridge:
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.name)
 
-        if(not self.debug):
+        if not self.debug:
             response = self.sendToCloud('addvalue', data_json)
-            if (not response.ok):
+            if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
             print("Debug: Wanted to send the following data to the cloud: ", data_json)

@@ -7,7 +7,7 @@ import serial
 import serial.tools.list_ports
 import socket, selectors, types
 
-class CommunicationHandler():
+class CommunicationHandler:
 # # A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
 # different channels
 
@@ -19,7 +19,7 @@ class CommunicationHandler():
 
     def loop(self):
     # The loop needs to be endless in order to run concurrently with the other jobs in the bridge
-        while (True):
+        while True:
             pass
 
     def write(self, data, device_id = None):
@@ -33,7 +33,7 @@ class CommunicationHandler():
 
         print("Reading flags")
 
-        if(self.inbuffer.isDebugMessage()):
+        if self.inbuffer.isDebugMessage():
             self.debug = True
             print("Debug message")
 
@@ -71,13 +71,13 @@ class CommunicationHandler():
         data_json['datatype'] = datatype
         print("json_data for initilization: ", data_json)
 
-        if (not self.debug):
+        if not self.debug:
             print(self.bridge.cloud + '/adddevice')
             response = requests.post(self.bridge.cloud + '/adddevice', json=data_json)
             device_id = int(response.content) # TODO: answer in a nicer machine readable way
             print("device_id: ", device_id)
 
-            if (sensor):
+            if sensor:
                 self.bridge.sensors.append(device_id)
                 print("Added sensor")
             else:
@@ -111,9 +111,9 @@ class CommunicationHandler():
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.bridge.name)
 
-        if(not self.debug):
+        if not self.debug:
             response = requests.post(self.bridge.cloud + '/addvalue', json=data_json)
-            if (not response.ok):
+            if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
             print("Debug: Wanted to send the following data to the cloud: ", data_json)
@@ -151,7 +151,7 @@ class SocketHandler(CommunicationHandler):
         if mask & selectors.EVENT_READ:
             recv_data = sock.recv(1)  # Should be ready to read
             if recv_data:
-                if(data.outb.readChar(recv_data)):
+                if data.outb.readChar(recv_data):
                     print("\nValue received")
                     self.inbuffer = data.outb
                     self.useData()
@@ -176,7 +176,7 @@ class SocketHandler(CommunicationHandler):
         #         data.outb = data.outb[sent:]
 
     def loop(self):
-        while(True):
+        while True:
             events = self.sel.select(timeout=None)
             for key, mask in events:
                 if key.data is None:
@@ -220,10 +220,10 @@ class SerialHandler(CommunicationHandler):
             print("not connected")
 
     def loop(self):
-        while (True):
+        while True:
             # look for a byte from serial
             if self.ser:
-                if self.ser.in_waiting>0:
+                if self.ser.in_waiting > 0:
                     # data available from the serial port
                     lastchar=self.ser.read(1)
 
