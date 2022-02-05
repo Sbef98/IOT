@@ -1,1 +1,2 @@
+from .message_management import createDeviceInitializationMessage
 from .message_handler import SerialHandler

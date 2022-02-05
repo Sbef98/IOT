@@ -6,9 +6,9 @@ import time
 # to see why I used requests and not urllib.request:
 # https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
 import requests
-from data import *
+from bridge.handler import SerialHandler
 
-class Bridge():
+class Bridge:
 
     def setup(self):
         self.debug = False
@@ -188,10 +188,3 @@ class Bridge():
 
                 print("Sent actuator: ", actuator, "value: ", value)
                 time.sleep(5)
-
-if __name__ == '__main__':
-    br=Bridge()
-    br.setup()
-    br.loop()
-    #hand = SocketHandler(None, 8080, "localhost")
-    #hand.loop()            

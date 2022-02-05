@@ -1,7 +1,6 @@
 from sys import platform
-from data import DataSet, createDeviceInitializationMessage, ProtocolBuffer
-
-#from protocol import ProtocolBuffer
+from bridge.data import DataSet, ProtocolBuffer
+from bridge.handler import createDeviceInitializationMessage
 
 import requests
 import serial
@@ -9,7 +8,7 @@ import serial.tools.list_ports
 import socket, selectors, types
 
 class CommunicationHandler():
-# A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
+# # A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
 # different channels
 
     def __init__(self, bridge):
