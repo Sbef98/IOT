@@ -3,5 +3,5 @@ Flask
 Flask-Bootstrap
 Flask-SQLAlchemy
 Flask-Migrate
-Flask-Script
-gunicorn
+gunicorn==20.1.0
+werkzeug

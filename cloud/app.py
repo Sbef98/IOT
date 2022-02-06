@@ -3,6 +3,7 @@
 from flask import Flask, flash, jsonify, redirect, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 from config import Config
 
@@ -14,6 +15,9 @@ Bootstrap(app)
 
 # db creation
 db = SQLAlchemy(app)
+
+migrate = Migrate()
+migrate.init_app(app, db)
 
 from models import Sensor, Sensorfeed, Actuator
 
