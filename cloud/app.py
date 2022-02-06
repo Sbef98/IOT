@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from datetime import datetime
-
 from flask import Flask, flash, jsonify, redirect, render_template, request
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
 appname = "Shopmaker"
-app = Flask(appname)
+app = Flask(__name__)
 myconfig = Config
 app.config.from_object(myconfig)
 Bootstrap(app)
@@ -17,46 +15,7 @@ Bootstrap(app)
 # db creation
 db = SQLAlchemy(app)
 
-
-class Actuator(db.Model):
-    __tablename__ = 'actuator'
-    id = db.Column('id', db.Integer, primary_key = True)
-    bridge_id = db.Column(db.Integer, nullable = False)
-    local_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
-    datatype = db.Column(db.String(100), nullable = False)
-    # both stored as string in order to all possible datatypes
-    last_value = db.Column(db.String(100), nullable = True)
-    next_value = db.Column(db.String(100), nullable = True)
-
-    def addToDatabase(self):
-        db.session.add(self)
-        db.session.commit()
-
-
-class Sensor(db.Model):
-    __tablename__ = 'sensor'
-    id = db.Column('id', db.Integer, primary_key = True)
-    bridge_id = db.Column(db.Integer, nullable = False)
-    local_id = db.Column(db.Integer, nullable = False) # keys need to be under 255 in the current protocol
-    datatype = db.Column(db.String(100), nullable = False)
-
-    def addToDatabase(self):
-        db.session.add(self)
-        db.session.commit()
-
-
-class Sensorfeed(db.Model):
-    __tablename__ = 'sensorfeed'
-    id = db.Column('feedid', db.Integer, primary_key = True)
-    value = db.Column(db.String(100))
-    timestamp = db.Column(db.DateTime(timezone=True), nullable=False,  default=datetime.utcnow)
-    sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
-    sensor =  db.relationship('Sensor', backref = db.backref('sensor_id', cascade='all, delete-orphan'),
-        foreign_keys = [sensor_id])
-
-    def addToDatabase(self):
-        db.session.add(self)
-        db.session.commit()
+from models import Sensor, Sensorfeed, Actuator
 
 
 def collectDeviceMetrics(devices):
@@ -86,7 +45,10 @@ def page_not_found(error):
 
 @app.route('/')
 def overview():
-    deviceNumber = Sensor.query.count() + Actuator.query.count()
+    try:
+        deviceNumber = Sensor.query.count() + Actuator.query.count()
+    except:
+        deviceNumber = 0
     bridgeNumber = 1 # TODO: query correctly DB
     return render_template('index.html', devices = deviceNumber, bridges = bridgeNumber)
 
@@ -247,10 +209,4 @@ def actuate(actuator_id):
 
 
 if __name__ == '__main__':
-
-    if True:  #create database on first turn on
-        db.create_all()
-
-    port = 8000
-    interface = '0.0.0.0'
-    app.run(host=interface,port=port, debug=True)
+    app.run()

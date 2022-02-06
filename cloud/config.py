@@ -16,20 +16,20 @@ class Config:
     FLASK_RUN_PORT = 8000
 
     FLASK_DEBUG = 0
-    FLASK_ENV = "development" #production
+    FLASK_ENV = "development"
     #FLASK_ENV = "production"  # production
 
     DEBUG = False
     TESTING = False #True
 
-    SESSION_TYPE = 'sqlalchemy' #'redis'
+    SESSION_TYPE = 'sqlalchemy'
     SESSION_SQLALCHEMY_TABLE = 'sessions'
     SESSION_COOKIE_NAME = 'my_cookieGetFace'
     SESSION_PERMANENT = True
 
     # Database
 
-    SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"  # = 'mysql://username:password@localhost/db_name'
+    SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
