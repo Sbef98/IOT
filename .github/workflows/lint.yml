@@ -6,6 +6,9 @@ jobs:
   flake8-lint:
     runs-on: ubuntu-latest
     name: Lint
+    strategy:
+      matrix:
+        exclude-folders: [bridge/bridge.py, cloud]
     steps:
       - name: Check out source repository
         uses: actions/checkout@v2
@@ -16,7 +19,5 @@ jobs:
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
-          ignore: "F401, F403, E722"
-          exclude: "sensor/", "bridge/data/"
+          ignore: "E722"
           max-line-length: "120"
-          path: "cloud"
