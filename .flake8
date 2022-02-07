@@ -1,0 +1,10 @@
+[flake8]
+ignore = E722, F401, F403
+exclude =
+    .git,
+    __pycache__,
+    sensor,
+    bridge/data,
+    bridge/handler
+max-line-length = 120
+f

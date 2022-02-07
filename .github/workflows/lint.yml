@@ -18,4 +18,4 @@ jobs:
         with:
           ignore: "F401, F403, E722"
           exclude: "sensor/", "bridge/data/"
-          max-line-length: "100"
+          max-line-length: "120"

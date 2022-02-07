@@ -3,10 +3,12 @@
 import asyncio
 import time
 
-# to see why I used requests and not urllib.request:
-# https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
+""" to see why I used requests and not urllib.request:
+https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
+-urllib2-urllib3-and-requests-modul"""
 import requests
-from data import SerialHandler, DataSet, createActuatorNewValueMessage, createDeviceInitializationMessage
+from data import SerialHandler, DataSet, createActuatorNewValueMessage, \
+    createDeviceInitializationMessage
 
 
 class Bridge():
@@ -105,7 +107,7 @@ class Bridge():
 
         datatype = ""
         for i in range(datasize):
-            print(self.inbuffer[4+i])
+            print(self.inbuffer[4 + i])
             datatype += self.inbuffer[4 + i].decode("ascii")
 
         data_json = {}
@@ -136,7 +138,7 @@ class Bridge():
             data = createDeviceInitializationMessage(flags, device_id)
 
             self.serialHandler.write(data)
-            print("Sent device_id to arduino",  device_id)
+            print("Sent device_id to arduino", device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
 
