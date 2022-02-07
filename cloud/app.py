@@ -98,6 +98,11 @@ def test():
     return str(sensor.id)
 
 
+@app.rout('/about')
+def about():
+    return render_template('about.html')
+
+
 @app.route('/initializebridge', methods=['POST'])
 def initializeBridge():
     # delete all objects saved for this bridge so far since it was turned of in between and will start initializing now
