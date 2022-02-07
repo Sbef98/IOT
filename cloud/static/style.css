@@ -1,0 +1,15 @@
+header {
+	text-align: center;
+	margin: .9em .9em 2em;
+		}
+.center {
+	display: block;
+	margin-left: auto;
+	margin-right: auto
+  		}
+table {
+	margin: .5em
+}
+h3 {
+	color: rgb(228, 60, 25);
+}

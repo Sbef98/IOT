@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}IoT Shopmaker{% endblock %}
+
+{% block header %} 
+	<h3> {{devicetype}} which are currently connected to the bridge
+	</h3>
+{% endblock %}
+
+{% block content %}	
+
+	<canvas id="BridgeChart" style="width:100%;max-width:500px"></canvas>
+	<canvas id="TypeChart" style="width:100%;max-width:500px"></canvas>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<script type="text/javascript">
+		var xValues = eval('{{bridges}}')
+		//Diagram does not work if there is only one value
+		if (xValues.length == 1){
+			xValues = [""].concat(xValues);
+		}
+
+		var yValues = '{{numbers}}';
+
+		var barColors = ["red", "green","blue","orange","brown"];
+
+		new Chart("BridgeChart", {
+		  type: "bar",
+		  data: {
+		    labels: xValues,
+		    datasets: [{
+		      backgroundColor: barColors,
+		      data: yValues
+		    }]
+		  },
+		  options: {
+		    legend: {display: false},
+		    title: {
+		      display: true,
+		      text: "Number of {{devicetype}} per Bridge"
+		    }
+		  }
+		});
+
+		var xValues = ["string"]; // TODO: do not hardcode
+		//Diagram does not work if there is only one value
+		if (xValues.length == 1){
+			xValues = [""].concat(xValues);
+		}
+		var yValues = '{{values}}';
+		var barColors = ["red", "blue", "green","orange","brown"];
+
+		new Chart("TypeChart", {
+		  type: "pie",
+		  data: {
+		    labels: xValues,
+		    datasets: [{
+		      backgroundColor: barColors,
+		      data: yValues
+		    }]
+		  },
+		  options: {
+		    title: {
+		      display: true,
+		      text: "Number of {{devicetype}} per datatype"
+		    }
+		  }
+		});
+</script>
+
+	{% block table %} {% endblock %}
+	
+{% endblock %}

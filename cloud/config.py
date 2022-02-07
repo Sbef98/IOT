@@ -19,11 +19,13 @@ class Config:
     TESTING = False  # True
 
     SESSION_TYPE = 'sqlalchemy'  # 'redis'
+
     SESSION_SQLALCHEMY_TABLE = 'sessions'
     SESSION_COOKIE_NAME = 'my_cookieGetFace'
     SESSION_PERMANENT = True
 
     # Database
+
 
     SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"
 
