@@ -2,12 +2,14 @@
 > A led is enough sometimes
 
 ## Purpose of this project
-The purpose is to build a framework that easily allows anybody to make their shop smarter than usual. With the help of sensors and actuators we want customers to have a better experience in your shop. Therefor we want for example to change the color of the light or the temperature in the shop if specific customer groups enter it.
+The purpose is to build a framework that easily allows anybody to make their shop smarter than usual. With the help of
+sensors and actuators we want customers to have a better experience in your shop. Therefor we want for example to change
+the color of the light or the temperature in the shop if specific customer groups enter it.
 
 ## Usage:
 The code inside of `sensor/protocol` is supposed to run on an arduino where several sensors are attached.
 
-The code in the folder `bridge` is supposed to run on e.g. an raspberry pi which then is able to send messages to via http to a cloud.
+The code in the folder `bridge` is supposed to run on e.g. a raspberry pi which then is able to send messages to via http to a cloud.
 
 The code in the folder `cloud` is supposed to run somewhere reachable via http. It stores values and computes
 predictions for the actuators on the arduino based on the data stored in the database.
