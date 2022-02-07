@@ -6,9 +6,6 @@ jobs:
   flake8-lint:
     runs-on: ubuntu-latest
     name: Lint
-    strategy:
-      matrix:
-        exclude-folders: [bridge/bridge.py, cloud]
     steps:
       - name: Check out source repository
         uses: actions/checkout@v2
@@ -20,4 +17,5 @@ jobs:
         uses: py-actions/flake8@v2
         with:
           ignore: "E722"
+          exclude: "Gender-and-Age-Detection"
           max-line-length: "120"

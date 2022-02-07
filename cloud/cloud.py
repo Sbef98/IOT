@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from config import Config
-from flask import Flask, render_template, request
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 
 appname = "Shopmaker"

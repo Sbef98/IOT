@@ -1,9 +1,10 @@
 [flake8]
-ignore = E722, F401, F403
+ignore = E722
 exclude =
     .git,
     __pycache__,
     sensor,
     bridge/data,
-    bridge/handler
+    bridge/handler,
+    Gender-and-Age-Detection
 max-line-length = 120
