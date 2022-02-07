@@ -64,7 +64,13 @@ def sensorOverview():
     bridgedictionary = collectBridgeMetrics(sensors)
     bridges = [int(key) for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('sensoroverview.html', devices=sensors, devtypes=types, values=values, bridges=bridges, numbers=numbers, devicetype='Sensors')
+    return render_template('sensoroverview.html',
+                           devices=sensors,
+                           devtypes=types,
+                           values=values,
+                           bridges=bridges,
+                           numbers=numbers,
+                           devicetype='Sensors')
 
 
 @app.route('/actuators')
@@ -76,7 +82,13 @@ def actuatorOverview():
     bridgedictionary = collectBridgeMetrics(actuators)
     bridges = [key for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('actuatoroverview.html', devices=actuators, devtypes=types, values=values, bridges=bridges, numbers=numbers, devicetype='Actuators')
+    return render_template('actuatoroverview.html',
+                           devices=actuators,
+                           devtypes=types,
+                           values=values,
+                           bridges=bridges,
+                           numbers=numbers,
+                           devicetype='Actuators')
 
 
 @app.route('/actuating/<int:actuator_id>')
@@ -131,7 +143,8 @@ def addDevice():
             sensor = Sensor(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             sensor.addToDatabase()
         else:
-            last_sensor = Sensor.query.filter_by(bridge_id=bridgeid).order_by(Sensor.local_id.desc()).limit(1).first_or_404()
+            last_sensor = Sensor.query.filter_by(bridge_id=bridgeid).order_by(
+                Sensor.local_id.desc()).limit(1).first_or_404()
             print(last_sensor)
             sensor = Sensor(bridge_id=bridgeid, local_id=(last_sensor.local_id + 1), datatype=json_data['datatype'])
             sensor.addToDatabase()
@@ -141,8 +154,10 @@ def addDevice():
             actuator = Actuator(bridge_id=bridgeid, local_id=0, datatype=json_data['datatype'])
             actuator.addToDatabase()
         else:
-            last_actuator = Actuator.query.filter_by(bridge_id=bridgeid).order_by(Actuator.local_id.desc()).limit(1).first_or_404()
-            actuator = Actuator(bridge_id=bridgeid, local_id=(last_actuator.local_id + 1), datatype=json_data['datatype'])
+            last_actuator = Actuator.query.filter_by(bridge_id=bridgeid).order_by(
+                Actuator.local_id.desc()).limit(1).first_or_404()
+            actuator = Actuator(bridge_id=bridgeid, local_id=(
+                last_actuator.local_id + 1), datatype=json_data['datatype'])
             actuator.addToDatabase()
             device_id = actuator.local_id
 
@@ -205,7 +220,8 @@ def getNewValues():
 @app.route('/actuate/<int:actuator_id>', methods=['POST'])
 def actuate(actuator_id):
     value = request.form['value']
-    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()     # in order to not try to send things to the bridge where no actuator exists
+    # in order to not try to send things to the bridge where no actuator exists
+    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()
     if not value:
         flash('Nothing sent as value was empty :(')
         return render_template('actuating.html', actuator=actuator)
