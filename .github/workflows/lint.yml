@@ -16,5 +16,7 @@ jobs:
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
-          exclude: "sensor"
-          path: "cloud, bridge"
+          ignore: "F403, E722"
+          exclude: "sensor/", "bridge/data/"
+          max-line-length: "100"
+          per-file-ignores: "__init__.py:F401"
