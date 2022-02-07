@@ -7,4 +7,3 @@ exclude =
     bridge/data,
     bridge/handler
 max-line-length = 120
-f
