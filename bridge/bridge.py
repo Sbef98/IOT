@@ -2,6 +2,9 @@
 
 import asyncio
 import time
+from bridge.data.data import DataSet
+
+from bridge.handler.message_management import createActuatorNewValueMessage, createDeviceInitializationMessage
 
 """ to see why I used requests and not urllib.request:
 https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
@@ -9,6 +12,8 @@ https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the
 import requests
 
 from bridge.handler import SerialHandler
+
+
 class Bridge:
 
     def setup(self):
@@ -69,7 +74,7 @@ class Bridge:
 
         flags = int.from_bytes(self.inbuffer[1], byteorder='little')
 
-        if flags & (1 << 6) == 64: # check whether second bit of flags is set
+        if flags & (1 << 6) == 64:  # check whether second bit of flags is set
             self.debug = True
             print("Debug message")
 
@@ -120,11 +125,10 @@ class Bridge:
             response = self.sendToCloud('adddevice', data_json)
             device_id = int(response.content)  # TODO: answer in a nicer machine readable way
 
-
             if device_id > 253:
-                print("Warning: to many devices initialized for that bridge and device id to high for serial communication")
+                print("Warning: to many devices initialized, device id to high for serial communication")
                 return
-            
+
             if sensor:
                 flags = 128
                 self.sensors.append(device_id)
@@ -189,6 +193,7 @@ class Bridge:
 
                 print("Sent actuator: ", actuator, "value: ", value)
                 time.sleep(5)
+
 
 if __name__ == '__main__':
     br = Bridge()

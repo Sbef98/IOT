@@ -1,29 +1,31 @@
-from sys import platform
 from bridge.data import DataSet, ProtocolBuffer
 from bridge.handler import createDeviceInitializationMessage
 
 import requests
 import serial
 import serial.tools.list_ports
-import socket, selectors, types
+import socket
+import selectors
+import types
+
 
 class CommunicationHandler:
-# # A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
-# different channels
-
+    """
+    # # A CommunicationHandler is a class which should be a blue print for Handlers that want to communicate via
+    # different channels
+    """
     def __init__(self, bridge):
         self.bridge = bridge
-
         self.debug = False
         self.inbuffer = ProtocolBuffer()
 
     def loop(self):
-    # The loop needs to be endless in order to run concurrently with the other jobs in the bridge
+        # The loop needs to be endless in order to run concurrently with the other jobs in the bridge
         while True:
             pass
 
-    def write(self, data, device_id = None):
-    # receives data already in the correct format and sends it via the intended communication channel
+    def write(self, data, device_id=None):
+        # receives data already in the correct format and sends it via the intended communication channel
         pass
 
     def useData(self):
@@ -40,7 +42,7 @@ class CommunicationHandler:
         message = self.inbuffer.toString()
         print(message)
 
-        if self.inbuffer.isInitializationMessage(): # check whether first bit of flags is set
+        if self.inbuffer.isInitializationMessage():     # check whether first bit of flags is set
             if self.inbuffer.isActuatorMessage():
                 self.state = "newActuator"
                 print("Initialize Actuator")
@@ -74,7 +76,7 @@ class CommunicationHandler:
         if not self.debug:
             print(self.bridge.cloud + '/adddevice')
             response = requests.post(self.bridge.cloud + '/adddevice', json=data_json)
-            device_id = int(response.content) # TODO: answer in a nicer machine readable way
+            device_id = int(response.content)               # TODO: answer in a nicer machine readable way
             print("device_id: ", device_id)
 
             if sensor:
@@ -89,7 +91,7 @@ class CommunicationHandler:
             print(data)
 
             self.write(data, device_id)
-            print("Sent device_id to arduino",  device_id)
+            print("Sent device_id to arduino", device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
 
@@ -121,30 +123,30 @@ class CommunicationHandler:
 
 # https://realpython.com/python-sockets/#handling-multiple-connections
 class SocketHandler(CommunicationHandler):
-    def __init__(self,bridge, port, host):
+    def __init__(self, bridge, port, host):
         super().__init__(bridge)
         self.host = host
         self.port = port
         self.sel = selectors.DefaultSelector()
 
         self.lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
+
         self.lsock.bind((host, port))
         self.lsock.listen()
         print('listening on', (host, port))
         self.lsock.setblocking(False)
         self.sel.register(self.lsock, selectors.EVENT_READ, data=None)
-        
+
         self.deviceConnections = {}
-        
+
     def accept_wrapper(self, sock):
         conn, addr = sock.accept()  # Should be ready to read
         print('accepted connection from', addr)
         conn.setblocking(False)
-        data = types.SimpleNamespace(addr=addr, outb = ProtocolBuffer())
+        data = types.SimpleNamespace(addr=addr, outb=ProtocolBuffer())
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         self.sel.register(conn, events, data)
-        
+
     def service_connection(self, key, mask):
         sock = key.fileobj
         data = key.data
@@ -161,14 +163,14 @@ class SocketHandler(CommunicationHandler):
             else:
                 key_list = list(self.deviceConnections.keys())
                 value_list = list(self.deviceConnections.values())
-                
+
                 key = key_list[value_list.index(sock)]
-                
+
                 print('closing connection to', data.addr, "Device id:", key)
                 self.deviceConnections.pop(key)
                 self.sel.unregister(sock)
                 sock.close()
-                
+
         # if mask & selectors.EVENT_WRITE:
         #     if data.outb:
         #         print('echoing', repr(data.outb), 'to', data.addr)
@@ -183,7 +185,7 @@ class SocketHandler(CommunicationHandler):
                     self.accept_wrapper(key.fileobj)
                 else:
                     self.service_connection(key, mask)
-                    
+
     def write(self, data, device_id):
         print("Sending data")
         sock = self.deviceConnections[device_id]
@@ -200,20 +202,21 @@ class SerialHandler(CommunicationHandler):
         print('list of available ports: ')
 
         ports = serial.tools.list_ports.comports()
-        self.portname=None
+        self.portname = None
 
         # finding correct serial port and connecting
         for port in ports:
-            print (port.device)
-            print (port.description)
-            if (platform == 'linux' and ('seeeduino' or 'leonardo' or 'usb') in port.description.lower()) or (platform == 'win32' and 'com4' in port.description.lower()):
+            print(port.device)
+            print(port.description)
+
+            if (('seeeduino' or 'usb') in port.description.lower()) or ('com4' in port.description.lower()):
                 self.portname = port.device
-                print ("connecting to " + self.portname)
+                print("connecting to " + self.portname)
                 break
         try:
             if self.portname:
                 print("Portname:" + self.portname)
-                self.ser =serial.Serial(self.portname)
+                self.ser = serial.Serial(self.portname)
                 print("self.ser:" + self.ser.name)
         except:
             self.ser = None
@@ -225,7 +228,7 @@ class SerialHandler(CommunicationHandler):
             if self.ser:
                 if self.ser.in_waiting > 0:
                     # data available from the serial port
-                    lastchar=self.ser.read(1)
+                    lastchar = self.ser.read(1)
 
                     message_ready = self.inbuffer.readChar(lastchar)
 
@@ -233,9 +236,9 @@ class SerialHandler(CommunicationHandler):
                         print("\nValue received")
                         self.useData()
 
-
     def write(self, bytesToSend, device_id=None):
         self.ser.write(bytesToSend)
+
 
 if __name__ == "__main__":
     hand = SocketHandler(None, 8080, "localhost")

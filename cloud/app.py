@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
-from flask import Flask, flash, jsonify, redirect, render_template, request
+from models import Sensor, Sensorfeed, Actuator
+from flask import Flask, flash, render_template, request   # jsonify, redirect,
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -18,8 +18,6 @@ db = SQLAlchemy(app)
 
 migrate = Migrate()
 migrate.init_app(app, db)
-
-from models import Sensor, Sensorfeed, Actuator
 
 
 def collectDeviceMetrics(devices):
@@ -53,8 +51,8 @@ def overview():
         deviceNumber = Sensor.query.count() + Actuator.query.count()
     except:
         deviceNumber = 0
-    bridgeNumber = 1 # TODO: query correctly DB
-    return render_template('index.html', devices = deviceNumber, bridges = bridgeNumber)
+    bridgeNumber = 1    # TODO: query correctly DB
+    return render_template('index.html', devices=deviceNumber, bridges=bridgeNumber)
 
 
 @app.route('/sensors')
@@ -66,7 +64,7 @@ def sensorOverview():
     bridgedictionary = collectBridgeMetrics(sensors)
     bridges = [int(key) for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('sensoroverview.html', devices = sensors, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Sensors')
+    return render_template('sensoroverview.html', devices=sensors, devtypes=types, values=values, bridges=bridges, numbers=numbers, devicetype='Sensors')
 
 
 @app.route('/actuators')
@@ -78,20 +76,20 @@ def actuatorOverview():
     bridgedictionary = collectBridgeMetrics(actuators)
     bridges = [key for key in bridgedictionary.keys()]
     numbers = [value for value in bridgedictionary.values()]
-    return render_template('actuatoroverview.html', devices = actuators, devtypes = types, values = values, bridges = bridges, numbers = numbers, devicetype = 'Actuators')
+    return render_template('actuatoroverview.html', devices=actuators, devtypes=types, values=values, bridges=bridges, numbers=numbers, devicetype='Actuators')
 
 
 @app.route('/actuating/<int:actuator_id>')
 def actuating(actuator_id):
-    actuator = Actuator.query.filter_by(id = actuator_id).first_or_404()
+    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()
     return render_template('actuating.html', actuator=actuator)
 
 
 @app.route('/test')
 def test():
     # add initial sensor
-    sensor = Sensor(bridge_id = 1, datatype = "integer")
-    actuator = Actuator(bridge_id = 1, datatype = "integer")
+    sensor = Sensor(bridge_id=1, datatype="integer")
+    actuator = Actuator(bridge_id=1, datatype="integer")
     db.session.add(sensor)
     db.session.add(actuator)
     db.session.commit()
@@ -171,7 +169,7 @@ def addInlist():
         sf.addToDatabase()
         print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
 
-    return str(0) # function must return something that is not an integer
+    return str(0)    # function must return something that is not an integer
 
 
 @app.route('/getNewValues', methods=['POST'])
@@ -207,7 +205,7 @@ def getNewValues():
 @app.route('/actuate/<int:actuator_id>', methods=['POST'])
 def actuate(actuator_id):
     value = request.form['value']
-    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404() #in order to not try to send things to the bridge where no actuator exists
+    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()     # in order to not try to send things to the bridge where no actuator exists
     if not value:
         flash('Nothing sent as value was empty :(')
         return render_template('actuating.html', actuator=actuator)
