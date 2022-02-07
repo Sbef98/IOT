@@ -7,11 +7,9 @@ import time
 https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
 -urllib2-urllib3-and-requests-modul"""
 import requests
-from data import SerialHandler, DataSet, createActuatorNewValueMessage, \
-    createDeviceInitializationMessage
 
-
-class Bridge():
+from bridge.handler import SerialHandler
+class Bridge:
 
     def setup(self):
         self.debug = False
@@ -71,7 +69,7 @@ class Bridge():
 
         flags = int.from_bytes(self.inbuffer[1], byteorder='little')
 
-        if flags & (1 << 6) == 64:  # check whether second bit of flags is set
+        if flags & (1 << 6) == 64: # check whether second bit of flags is set
             self.debug = True
             print("Debug message")
 
@@ -118,15 +116,15 @@ class Bridge():
         data_json['datatype'] = datatype
         print("json_data for initilization: ", data_json)
 
-        if (not self.debug):
+        if not self.debug:
             response = self.sendToCloud('adddevice', data_json)
             device_id = int(response.content)  # TODO: answer in a nicer machine readable way
 
-            if(device_id > 253):
-                print("""Warning: to many devices initialized for that bridge and
-                 device id to high for serial communication""")
-                return
 
+            if device_id > 253:
+                print("Warning: to many devices initialized for that bridge and device id to high for serial communication")
+                return
+            
             if sensor:
                 flags = 128
                 self.sensors.append(device_id)
@@ -143,10 +141,10 @@ class Bridge():
             print("Debug: Wanted to initialize sensor:", data_json)
 
     def addValueForSensor(self):
-        sensorID = int.from_bytes(self.inbuffer[2], byteorder='little')
+        sensorID = self.inbuffer.getDeviceId()
         currentData = DataSet(sensorID)
 
-        datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
+        datasize = self.inbuffer.getDataSize() - 1
 
         for i in range(datasize):
             try:
@@ -160,9 +158,9 @@ class Bridge():
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.name)
 
-        if(not self.debug):
+        if not self.debug:
             response = self.sendToCloud('addvalue', data_json)
-            if (not response.ok):
+            if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
             print("Debug: Wanted to send the following data to the cloud: ", data_json)
@@ -191,7 +189,6 @@ class Bridge():
 
                 print("Sent actuator: ", actuator, "value: ", value)
                 time.sleep(5)
-
 
 if __name__ == '__main__':
     br = Bridge()
