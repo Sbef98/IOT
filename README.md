@@ -9,6 +9,8 @@ The code inside of `sensor/protocol` is supposed to run on an arduino where seve
 
 The code in the folder `bridge` is supposed to run on e.g. an raspberry pi which then is able to send messages to via http to a cloud.
 
+Start the bridge via `python -m bridge` from the current folder. 
+
 The code in the folder `cloud` is supposed to run somewhere reachable via http. It stores values and computes predictions for the actuators on the arduino based on the data stored in the database.
 
 ## Resources:
