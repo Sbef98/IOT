@@ -1,0 +1,10 @@
+[flake8]
+ignore = E722
+exclude =
+    .git,
+    __pycache__,
+    sensor,
+    bridge/data,
+    bridge/handler,
+    Gender-and-Age-Detection
+max-line-length = 120

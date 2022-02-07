@@ -1,0 +1,4 @@
+web: gunicorn app:app --preload --log-level=debug --bind 0.0.0.0:${PORT} wsgi
+init: flask db init
+migrate: flask db migrate
+upgrade: flask db upgrade

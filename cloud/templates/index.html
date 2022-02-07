@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}IoT Shopmaker{% endblock %}
+
+{% block header %} 
+	<h3> Welcome to IoT Shopmaker  
+		<small class="text-muted">Make shopping an experience</small> 
+	</h3>
+{% endblock %}
+
+{% block content %}
+	<table class="table table-borderless">
+		<tr style="text-align: center; font-weight: bold; font-size: xx-large;">
+			<th style="width: 100;"> {{devices}} </th>
+			<th style="width: 100;"> {{bridges}} </th>
+		</tr>
+		<tr style="text-align: center">
+			<td> devices currently installed </td>
+			<td> bridges </td>
+
+	</table>
+	<p class="text-md-center">Welcome! Here you can have an overview over all the sensors and actuators currently deployed in your shop! </p>
+	<p class="text-md-center">Currently <b> {{devices}} sensors and actuators </b> are connected to <b>{{bridges}} bridge(s)</b> in your shop. Together they are creating the best possible atmosphere for your customers.</p>
+{% endblock %}

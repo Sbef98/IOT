@@ -3,16 +3,17 @@
 import asyncio
 import time
 
-# to see why I used requests and not urllib.request:
-# https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib-urllib2-urllib3-and-requests-modul
+""" to see why I used requests and not urllib.request:
+https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
+-urllib2-urllib3-and-requests-modul"""
 import requests
-from bridge.handler import SerialHandler
 
+from bridge.handler import SerialHandler
 class Bridge:
 
     def setup(self):
         self.debug = False
-        self.name = 1 # Change when using a new bridge!
+        self.name = 1  # Change when using a new bridge!
         self.cloud = 'http://127.0.0.1:8000'
 
         self.sensors = []
@@ -36,7 +37,6 @@ class Bridge:
         response = requests.post(self.cloud + '/' + path, json=json_data)
         return response
 
-
     async def asyncFunctions(self):
         # insert loops of communication handlers here
         callables = [self.serialHandler.loop, self.queryForNewActuatorValues]
@@ -57,11 +57,11 @@ class Bridge:
 
         self.inbuffer = data
 
-        if len(self.inbuffer)<4:   # at least header, flags, sensorid, new sensor datatype, footer
+        if len(self.inbuffer) < 4:   # at least header, flags, sensorid, new sensor datatype, footer
             print("Warning: Message is shorter than minimum size")
             return False
         # split parts
-        if self.inbuffer[0] != b'\xff': # first byte
+        if self.inbuffer[0] != b'\xff':  # first byte
             print("Warning: Start of sent data is incorrect")
             return False
 
@@ -80,10 +80,10 @@ class Bridge:
             try:
                 message += self.inbuffer[i].decode("ascii")
             except:
-                print("Print wrong character for: ",i , self.inbuffer[i])
+                print("Print wrong character for: ", i, self.inbuffer[i])
         print("Message as text: " + message)
 
-        if flags & (1 << 7) == 128: # check whether first bit of flags is set
+        if flags & (1 << 7) == 128:  # check whether first bit of flags is set
             if flags & (1 << 5) == 32:
                 self.state = "newActuator"
                 print("Initialize Actuator")
@@ -92,7 +92,7 @@ class Bridge:
                 self.state = "newSensor"
                 print("Initialize Sensor")
                 self.initializeDevice(sensor=True)
-            
+
         else:
             self.state = "addValueForSensor"
             print("Add Value for Sensor")
@@ -102,23 +102,24 @@ class Bridge:
         # read string from inbuffer until fe
         # FF Flags sensorid=0 datasize datatype_as_string FE
         datasize = int.from_bytes(self.inbuffer[3], byteorder='little')
-        
+
         datatype = ""
         for i in range(datasize):
-            print(self.inbuffer[4+i])
+            print(self.inbuffer[4 + i])
             datatype += self.inbuffer[4 + i].decode("ascii")
 
         data_json = {}
         data_json['bridgeid'] = str(self.name)
 
         data_json['sensor'] = "True" if sensor else "False"
-    
+
         data_json['datatype'] = datatype
         print("json_data for initilization: ", data_json)
 
         if not self.debug:
             response = self.sendToCloud('adddevice', data_json)
-            device_id = int(response.content) # TODO: answer in a nicer machine readable way
+            device_id = int(response.content)  # TODO: answer in a nicer machine readable way
+
 
             if device_id > 253:
                 print("Warning: to many devices initialized for that bridge and device id to high for serial communication")
@@ -133,9 +134,9 @@ class Bridge:
                 print("Added actuator")
 
             data = createDeviceInitializationMessage(flags, device_id)
-            
+
             self.serialHandler.write(data)
-            print("Sent device_id to arduino",  device_id)
+            print("Sent device_id to arduino", device_id)
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
 
@@ -188,3 +189,8 @@ class Bridge:
 
                 print("Sent actuator: ", actuator, "value: ", value)
                 time.sleep(5)
+
+if __name__ == '__main__':
+    br = Bridge()
+    br.setup()
+    br.loop()
