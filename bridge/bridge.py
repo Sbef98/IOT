@@ -15,10 +15,10 @@ from bridge.handler import SerialHandler
 
 class Bridge:
 
-    def setup(self):
+    def __init__(self):
         self.debug = False
         self.name = 1  # Change when using a new bridge!
-        self.cloud = 'http://127.0.0.1:8000'
+        self.cloud = 'http://127.0.0.1:5000'
 
         self.sensors = []
         self.actuators = []
@@ -84,5 +84,4 @@ class Bridge:
 
 if __name__ == '__main__':
     br = Bridge()
-    br.setup()
     br.loop()
