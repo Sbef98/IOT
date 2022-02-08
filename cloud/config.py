@@ -1,3 +1,4 @@
+from os import environ
 
 
 class Config:
@@ -26,7 +27,7 @@ class Config:
 
     # Database
 
-    SQLALCHEMY_DATABASE_URI = "sqlite:///db.sqlite"
+    SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL']
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
