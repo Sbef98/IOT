@@ -27,7 +27,7 @@ class Config:
 
     # Database
 
-    SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL']
+    SQLALCHEMY_DATABASE_URI = environ['DATABASE_URL_NEW']
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
