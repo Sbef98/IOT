@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from models import Sensor, Sensorfeed, Actuator
+
 from flask import Flask, flash, render_template, request   # jsonify, redirect,
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
@@ -18,6 +18,8 @@ db = SQLAlchemy(app)
 
 migrate = Migrate()
 migrate.init_app(app, db)
+
+from models import Sensor, Sensorfeed, Actuator
 
 
 def collectDeviceMetrics(devices):
