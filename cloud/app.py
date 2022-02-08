@@ -123,6 +123,10 @@ def initializeBridge():
 
     # TODO: change database that all associated sensorfeeds to the deleted sensors also get deleted
 
+    sensors = Sensor.query.filter_by(bridge_id=1)
+    for sensor in sensors:
+        sensorfeeds = Sensorfeed.__table__.delete().where(Sensorfeed.sensor_id==sensor.id)
+        db.session.execute(sensorfeeds)
     deleted_sensors = Sensor.__table__.delete().where(Sensor.bridge_id == bridgeid)
     db.session.execute(deleted_sensors)
 
