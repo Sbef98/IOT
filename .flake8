@@ -4,7 +4,7 @@ exclude =
     .git,
     __pycache__,
     sensor,
-    bridge/data,
-    bridge/handler,
-    Gender-and-Age-Detection
+    Gender-and-Age-Detection,
+    migrations
 max-line-length = 120
+per-file-ignores = __init__.py:F401
