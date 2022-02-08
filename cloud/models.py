@@ -34,9 +34,9 @@ class Sensorfeed(db.Model):
     id = db.Column('feedid', db.Integer, primary_key=True)
     value = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id'), nullable=False)
+    sensor_id = db.Column(db.Integer, db.ForeignKey('sensor.id', ondelete='cascade'), nullable=False)
     sensor = db.relationship('Sensor', backref=db.backref('sensor_id',
-                                                          cascade='all, delete-orphan'), foreign_keys=[sensor_id])
+                                                          cascade='all, delete'), foreign_keys=[sensor_id])
 
     def addToDatabase(self):
         db.session.add(self)
