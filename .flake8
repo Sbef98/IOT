@@ -7,4 +7,8 @@ exclude =
     Gender-and-Age-Detection,
     migrations
 max-line-length = 120
-per-file-ignores = __init__.py:F401
+per-file-ignores =
+    # Ignore unused import errors in init files
+    __init__.py:F401,
+    # Ignore that not all imports are at the top in order for app to run
+    cloud/app.py:E402
