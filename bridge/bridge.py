@@ -4,7 +4,8 @@ import asyncio
 import time
 
 from bridge.data.data import DataSet
-from bridge.handler.message_handler import SocketHandler, createActuatorNewValueMessage
+from bridge.handler.message_handler import SocketHandler
+from bridge.handler.message_management import createActuatorNewValueMessage
 
 """ to see why I used requests and not urllib.request:
 https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
@@ -232,13 +233,6 @@ class Bridge:
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-    br = Bridge()
-    br.loop()
-=======
     hand = SocketHandler(None, 8080, "localhost")
     SocketHandler.loop()
-<<<<<<< HEAD
->>>>>>> 5a8c296 (Added few line of code to run the bridge without having the cloud up and running)
-=======
->>>>>>> 9058181 (Added more mods to the bridge to work serverless)
+
