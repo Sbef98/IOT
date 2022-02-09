@@ -32,7 +32,7 @@ def createActuatorNewValueMessage(device_id, data):
 def getBytesForData(data):
     newData = b''
     datasize = 0
-    if isinstance(data, list):
+    if isinstance(data, list) or isinstance(data, tuple):
         for item in data:
             newDataPoint, datasizeForPoint = getBytesForDatapoint(item)
             newData += newDataPoint
@@ -45,6 +45,7 @@ def getBytesForData(data):
 
 def getBytesForDatapoint(datapoint):
     # handle integer and strings differently
+    print(datapoint)
     try:
         newBytes = bytes([int(datapoint)])
     except:

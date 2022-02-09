@@ -1,20 +1,15 @@
-# Initializing important imports
 
 import csv
 import datetime
 
 import numpy as np
-# import openpyxl
-import xlrd
-# import xlsxwriter
-# from openpyxl import load_workbook
-from xlutils.copy import copy
-# from xlwt import Workbook
 
 import cv2
 from pyimagesearch.centroidtracker import CentroidTracker
 from summary import summary
 from os import path
+
+from socket_send import sendToBridge
 
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
@@ -32,7 +27,7 @@ vid.set(cv2.CAP_PROP_FRAME_HEIGHT, 300)
 vid.set(cv2.CAP_PROP_FPS, 15)
 ret, rawCapture = vid.read()
 
-db_path = './database.csv'
+db_path = 'database.csv'
 
 # Initializing CSV Database if not existing
 row = 1
@@ -93,7 +88,7 @@ print("[Info]: Model Deployed . . .")
 print("[Info]: Starting Video Stream . . .")
 
 
-while (True):
+while True:
     _, frame = vid.read()
     # frame = frame.array
     (h, w) = frame.shape[:2]
@@ -141,7 +136,7 @@ while (True):
             detected += 1
             # To take frame as soon as an object is detected I used a variable p
 
-            if (detect_mature == 15):
+            if detect_mature == 15:
                 row = row + 1
                 Total += 1
 
@@ -173,7 +168,7 @@ while (True):
 
                 # For Summary file
 
-                if (gender == 'Male'):
+                if gender == 'Male':
                     T_gender[0] += 1
                 else:
                     T_gender[1] += 1
@@ -201,8 +196,10 @@ while (True):
                     writer = csv.writer(file)
                     writer.writerow(data)
 
+                sendToBridge(1, person, gender, age)
+
             # To make sure a new face is detected
-            if(objectID > person):
+            if objectID > person:
                 person = person + 1
                 detect_mature = 0
 
@@ -216,7 +213,7 @@ while (True):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
             cv2.rectangle(frame, (centroid[0], centroid[1]), (centroid[2], centroid[3]), (0, 0, 255), 2)
-            if (date != str(datetime.date.today().strftime("%B %d, %Y"))):
+            if date != str(datetime.date.today().strftime("%B %d, %Y")):
                 summary(T_age, T_gender, Total, detected, date)
                 print("[Info]: Summary file saved . . .")
                 date = str(datetime.date.today().strftime("%B %d, %Y"))
