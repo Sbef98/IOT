@@ -1,5 +1,6 @@
 # Initializing important imports
 
+import csv
 import datetime
 
 import numpy as np
@@ -13,6 +14,7 @@ from xlutils.copy import copy
 import cv2
 from pyimagesearch.centroidtracker import CentroidTracker
 from summary import summary
+from os import path
 
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
@@ -30,13 +32,21 @@ vid.set(cv2.CAP_PROP_FRAME_HEIGHT, 300)
 vid.set(cv2.CAP_PROP_FPS, 15)
 ret, rawCapture = vid.read()
 
-# Initializing XLS file for data
+db_path = './database.csv'
 
-Data_base = xlrd.open_workbook('Data_base.xls')
-data = Data_base.sheet_by_index(0)
-Feature = copy(Data_base)
-sheetfeature = Feature.get_sheet(0)
-row = int(data.cell_value(1, 7))
+# Initializing CSV Database if not existing
+row = 1
+if not path.isfile(db_path):
+    header = ['id', 'date', 'time', 'gender', 'age']
+    with open(db_path, 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+else:
+    with open(db_path, 'r') as file:
+        reader = csv.reader(file)
+        for reader_row in reader:
+            if reader_row[0] != 'id':
+                row = int(reader_row[0])
 
 # initialize our centroid tracker and frame dimensions
 ct = CentroidTracker()
@@ -178,15 +188,18 @@ while (True):
                 # To print in CMD about the gender & age.
                 print("The ID: %s is %s & is between %s " % (person, gender, age))
 
-                # Writing features to the excel file & saving it.
+                # ['id', 'date', 'time', 'gender', 'age']
+                data = [
+                    str(person),
+                    str(datetime.datetime.now().date()),
+                    str(datetime.datetime.now().time().replace(microsecond=0)),
+                    gender,
+                    age
+                ]
 
-                sheetfeature.write(row, 1, datetime.date.today().strftime("%B %d, %Y"))
-                sheetfeature.write(row, 2, datetime.datetime.now().strftime("%I:%M%p"))
-                sheetfeature.write(row, 0, row)
-                sheetfeature.write(row, 3, gender)
-                sheetfeature.write(row, 4, age)
-                sheetfeature.write(1, 7, row)
-                Feature.save('Data_base.xls')
+                with open(db_path, 'a') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(data)
 
             # To make sure a new face is detected
             if(objectID > person):
