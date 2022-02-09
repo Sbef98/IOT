@@ -3,7 +3,8 @@
 import asyncio
 import time
 
-from bridge.handler.message_management import createActuatorNewValueMessage
+from bridge.data.data import DataSet
+from bridge.handler.message_handler import SocketHandler, createActuatorNewValueMessage
 
 """ to see why I used requests and not urllib.request:
 https://stackoverflow.com/questions/2018026/what-are-the-differences-between-the-urllib
@@ -29,15 +30,31 @@ class Bridge:
         self.inbuffer = []
         self.state = "addValueForSensor"
 
+        self.serverInitialized = False  # Useful to run the bridge without cloud running
+
         self.sendInitializeMessageToCloud()
 
     def sendInitializeMessageToCloud(self):
         data_json = {}
         data_json['bridgeid'] = str(self.name)
-        self.sendToCloud('initializebridge', data_json)
-        print("Initialized Bridge")
+
+        try:
+            self.sendToCloud('initializebridge', data_json)
+            print("Initialized Bridge")
+            self.serverInitialized = True
+
+        except requests.exceptions.ConnectionError:
+            print("Cannot initialize Bridge. Connection Error.")
+            self.serverInitialized = False
+
+        return self.serverInitialized
 
     def sendToCloud(self, path, json_data):
+
+        if not self.serverInitialized:  # If not initialized yet i try anotehr initialization
+            if self.sendInitializeMessageToCloud() == false:
+                return None
+
         response = requests.post(self.cloud + '/' + path, json=json_data)
         return response
 
@@ -83,5 +100,10 @@ class Bridge:
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     br = Bridge()
     br.loop()
+=======
+    hand = SocketHandler(None, 8080, "localhost")
+    SocketHandler.loop()
+>>>>>>> 5a8c296 (Added few line of code to run the bridge without having the cloud up and running)
