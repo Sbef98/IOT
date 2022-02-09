@@ -16,3 +16,7 @@ chiave
 # IDEA
 /.idea/
 *.iml
+
+# People detection
+Data_base.xls
+summary/
