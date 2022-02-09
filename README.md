@@ -15,7 +15,12 @@ The code inside of `sensor/protocol` is supposed to run on an arduino where seve
 ### Bridge
 The code in the folder `bridge` is supposed to run on e.g. a raspberry pi which then is able to send messages to via http to a cloud.
 
-Start the bridge via `python -m bridge` from the current folder. 
+Start the bridge via `python -m bridge` from the current folder.
+
+### Gender and Age Detection
+The Gender and Age Detection is based on the project
+[Gender and Age Prediction based Customer Tracking Classification on Raspberry Pi](https://github.com/afaq-ahmad/Gender-and-Age-Detection-based-Customer-Tracking-Classification-on-Raspberry-pi).
+You can start the Prediction using: `PYTHONPATH=absolute/path/to/IOT/bridge python3 Detect.py`.
 
 ### Cloud
 The code in the folder `cloud` is supposed to run somewhere reachable via http. It stores values and computes
