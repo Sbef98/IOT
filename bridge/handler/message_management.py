@@ -1,6 +1,6 @@
 
 
-def createMessageForArduino(flags, device_id, datasize, data):
+def createProtocolMessage(flags, device_id, datasize, data):
     # prepare data, datasize depends whether we are working on
     # strings or not and therefor calculate it again
 
@@ -20,13 +20,13 @@ def createMessageForArduino(flags, device_id, datasize, data):
 
 def createDeviceInitializationMessage(device_id, sensor):
     if sensor:
-        return createMessageForArduino(flags=128, device_id=device_id, datasize=0, data=[])
+        return createProtocolMessage(flags=128, device_id=device_id, datasize=0, data=[])
     else:
-        return createMessageForArduino(flags=(128 + 32), device_id=device_id, datasize=0, data=[])
+        return createProtocolMessage(flags=(128 + 32), device_id=device_id, datasize=0, data=[])
 
 
 def createActuatorNewValueMessage(device_id, data):
-    return createMessageForArduino(flags=32, device_id=device_id, datasize=len(data), data=data)
+    return createProtocolMessage(flags=32, device_id=device_id, datasize=len(data), data=data)
 
 
 def getBytesForData(data):
