@@ -3,7 +3,7 @@
 import asyncio
 import time
 
-from sqlalchemy import false
+# from sqlalchemy import false
 from bridge.data.data import DataSet
 from bridge.handler.message_handler import SocketHandler
 
@@ -53,11 +53,6 @@ class Bridge:
         return self.serverInitialized
 
     def sendToCloud(self, path, json_data):
-
-        if not self.serverInitialized:  # If not initialized yet i try anotehr initialization
-            if self.sendInitializeMessageToCloud() == false:
-                return None
-
         response = requests.post(self.cloud + '/' + path, json=json_data)
         return response
 
@@ -141,6 +136,13 @@ class Bridge:
         print("json_data for initilization: ", data_json)
 
         if not self.debug:
+
+            if not self.serverInitialized:      # If first initialization did not workm, let's try again
+                if not self.sendInitializeMessageToCloud():
+                    print("Skipping comunication with cloud due to no connection")
+                    print("Assuming Debug Mode, Wanted to initialize sensor:", data_json)
+                    return
+
             response = self.sendToCloud('adddevice', data_json)
             device_id = int(response.content)  # TODO: answer in a nicer machine readable way
 
@@ -160,6 +162,7 @@ class Bridge:
 
             self.serialHandler.write(data)
             print("Sent device_id to arduino", device_id)
+
         else:
             print("Debug: Wanted to initialize sensor:", data_json)
 
@@ -182,6 +185,13 @@ class Bridge:
         data_json = currentData.getJSON(self.name)
 
         if not self.debug:
+
+            if not self.serverInitialized:      # If first initialization did not work, let's try again
+                if not self.sendInitializeMessageToCloud():
+                    print("Skipping comunication with cloud due to no connection")
+                    print("Assuming Debug Mode, Wanted to send the following data to the cloud: ", data_json)
+                    return
+
             response = self.sendToCloud('addvalue', data_json)
             if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
@@ -196,6 +206,13 @@ class Bridge:
             data_json['bridgeid'] = str(self.name)
             data_json['actuator_num'] = str(len(self.actuators))
             data_json['actuators'] = [str(actuator) for actuator in self.actuators]
+
+            if not self.serverInitialized:      # If first initialization did not workm, let's try again
+                if not self.sendInitializeMessageToCloud():
+                    print("Can't query for new actuators value if no connection is enstablished first")
+                    print("Assuming Debug Mode, Wanted to query actuators:", data_json)
+                    continue    # Continues the while
+
             response = self.sendToCloud('getNewValues', data_json)
 
             # expecting json like {'actuator_number' : 'actuator_value'}
