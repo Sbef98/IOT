@@ -37,6 +37,4 @@ class Config:
 
     # JWT
     SECRET_KEY = 'my-secret'
-    BRIDGE_TOKENS = {
-        '1': 'my-token'
-    }
+    BRIDGE_TOKENS = environ['BRIDGE_TOKENS']
