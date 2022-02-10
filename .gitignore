@@ -5,7 +5,10 @@ __pycache__/
 *.sqlite
 
 # VS Code Workspace
-.vs
+.vs/*
+.vscode/*
+# Local History for Visual Studio Code
+.history/
 
 # Keys
 chiave

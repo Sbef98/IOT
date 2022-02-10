@@ -2,7 +2,7 @@ import types
 
 
 def emptyProtocolInBuffer():
-    return types.SimpleNamespace(data=[], flags=-1, device_id=-1, data_length=0)
+    return types.SimpleNamespace(data=[], flags=-1, sent_data_size=None, device_id=-1, data_length=0)
 
 
 class ProtocolValsIterator:
@@ -46,6 +46,9 @@ class ProtocolBuffer:
 
             elif self.inBuffer.device_id == -1:
                 self.setDeviceId(int.from_bytes(val, byteorder='little'))
+
+            elif not self.inBuffer.sent_data_size:
+                self.inBuffer.sent_data_size = int.from_bytes(val, byteorder='little')
 
             else:
                 self.addValue(val)
