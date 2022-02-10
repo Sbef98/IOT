@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from flask import Flask, flash, render_template, request   # jsonify, redirect,
+import datetime
+from flask import Flask, flash, render_template, request   # jsonify
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -53,6 +54,16 @@ def collectBridgeMetrics(devices):
     return bridgedict
 
 
+def getCustomerNumber():
+    currentTime = datetime.datetime.utcnow()
+    oneHourAgo = currentTime - datetime.timedelta(days=1)
+    #customerNumber = Customer.query.filter_by(Customer.timestamp > oneHourAgo).count()
+    customerNumber = db.session.query(Customer).filter(
+        Customer.timestamp > oneHourAgo).all().count(Customer.id)
+
+    return customerNumber
+
+
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
@@ -89,7 +100,7 @@ def overview():
     except:
         deviceNumber = 0
     bridgeNumber = 1    # TODO: query correctly DB
-    return render_template('index.html', devices=deviceNumber, bridges=bridgeNumber)
+    return render_template('index.html', devices=deviceNumber, bridges=bridgeNumber, customers=getCustomerNumber())
 
 
 @app.route('/sensors')
