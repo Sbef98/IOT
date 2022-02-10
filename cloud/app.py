@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from ast import literal_eval
 import datetime
 from flask import Flask, flash, render_template, request   # jsonify
 from flask_bootstrap import Bootstrap
@@ -23,6 +24,7 @@ migrate = Migrate()
 migrate.init_app(app, db)
 
 from models import Sensor, Sensorfeed, Actuator, Customer
+from customerlogic import getCustomerNumberInTimeInterval
 
 
 def queryForSensor(sensorid):
@@ -99,7 +101,11 @@ def overview():
     except:
         deviceNumber = 0
     bridgeNumber = 1    # TODO: query correctly DB
-    return render_template('index.html', devices=deviceNumber, bridges=bridgeNumber, customers=getCustomerNumber())
+    return render_template(
+        'index.html',
+        devices=deviceNumber,
+        bridges=bridgeNumber,
+        customers=getCustomerNumberInTimeInterval(datetime.timedelta(days=1)))
 
 
 @app.route('/sensors')
@@ -301,12 +307,13 @@ def addPredictedValues():
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
 
-    # Expecting data in the format: {..., data: {'Gender' : 'M', 'Age' : '23'}}
+    # Expecting data in the format: {..., data: {'Gender' : 'M', 'Age' : '(23, 32)'}}
 
     for i in range(datasize):
         data_item = data_list[i]
         gender = data_item['Gender']
-        age = data_item['Age']
+        age_tuple = literal_eval(data_item['Age'])
+        age = (age_tuple[0] + age_tuple[1]) / 2
         person = Customer(gender=gender, age=age)
         person.addToDatabase()
 
