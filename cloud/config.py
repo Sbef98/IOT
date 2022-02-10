@@ -36,5 +36,5 @@ class Config:
     CACHE_DEFAULT_TIMEOUT = 100
 
     # JWT
-    SECRET_KEY = environ['SECRET_KEY']
-    BRIDGE_TOKENS = environ['BRIDGE_TOKENS']
+    TOKEN_SECRET_KEY = environ['SECRET_KEY']
+    TOKEN_BRIDGE_IDS = environ['BRIDGE_TOKEN_IDs']
