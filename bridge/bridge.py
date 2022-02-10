@@ -19,6 +19,11 @@ class Bridge:
         self.debug = False
         self.name = 1  # Change when using a new bridge!
         self.cloud = 'http://127.0.0.1:5000'
+        """generate token using:
+        token = jwt.encode(
+            {'public_id': self.name, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=8)}, 'my-secret')
+        use secret from bridge"""
+        self.accessToken = ''
 
         self.sensors = []
         self.actuators = []
@@ -38,7 +43,11 @@ class Bridge:
         print("Initialized Bridge")
 
     def sendToCloud(self, path, json_data):
-        response = requests.post(self.cloud + '/' + path, json=json_data)
+        response = requests.post(
+            self.cloud + '/' + path,
+            json=json_data,
+            headers={'x-access-tokens': self.accessToken})
+        print(response)
         return response
 
     async def asyncFunctions(self):
