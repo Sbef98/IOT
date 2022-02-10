@@ -1,7 +1,6 @@
 from bridge.data import DataSet, ProtocolBuffer
 from bridge.handler import createDeviceInitializationMessage
 
-import requests
 import serial
 import serial.tools.list_ports
 import socket
@@ -75,7 +74,7 @@ class CommunicationHandler:
 
         if not self.debug:
             print(self.bridge.cloud + '/adddevice')
-            response = requests.post(self.bridge.cloud + '/adddevice', json=data_json)
+            response = self.bridge.sendToCloud('/adddevice', data_json)
             device_id = int(response.content)               # TODO: answer in a nicer machine readable way
             print("device_id: ", device_id)
 
@@ -114,7 +113,7 @@ class CommunicationHandler:
         data_json = currentData.getJSON(self.bridge.name)
 
         if not self.debug:
-            response = requests.post(self.bridge.cloud + '/addvalue', json=data_json)
+            response = self.bridge.sendToCloud('/addvalue', json=data_json)
             if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:
