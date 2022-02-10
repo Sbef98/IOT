@@ -39,7 +39,7 @@ class Bridge:
     def sendInitializeMessageToCloud(self):
         data_json = {}
         data_json['bridgeid'] = str(self.name)
-        self.sendToCloud('initializebridge', data_json)
+        self.sendToCloud('/initializebridge', data_json)
         print("Initialized Bridge")
 
     def sendToCloud(self, path, json_data):
@@ -47,7 +47,6 @@ class Bridge:
             self.cloud + '/' + path,
             json=json_data,
             headers={'x-access-tokens': self.accessToken})
-        print(response)
         return response
 
     async def asyncFunctions(self):

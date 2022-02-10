@@ -57,7 +57,8 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            data['public_id'] in app.config['BRIDGE_TOKENS']
+            if not data['public_id'] in app.config['BRIDGE_TOKENS']:
+                raise Exception('Public id not in expected tokens')
         except:
             return {'message': 'token is invalid'}
         return f(data['public_id'], *args, **kwargs)
