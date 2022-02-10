@@ -21,7 +21,16 @@ db = SQLAlchemy(app)
 migrate = Migrate()
 migrate.init_app(app, db)
 
-from models import Sensor, Sensorfeed, Actuator
+from models import Sensor, Sensorfeed, Actuator, Customer
+
+
+def queryForSensor(sensorid):
+    sensor = Sensor.query.get(sensorid)
+
+    if not sensor:
+        print("Warning: Sensor not found with id: ", sensorid)
+        return "Given id for sensor not in database", 400, None
+    return "Ok", 200, sensor
 
 
 def collectDeviceMetrics(devices):
@@ -222,11 +231,10 @@ def addInlist():
 
     bridgeid = int(json_data['bridgeid'])
     sensorid = int(json_data['sensorid'])
-    sensor = Sensor.query.filter_by(local_id=sensorid, bridge_id=bridgeid).first_or_404()
+    text, statuscode, sensor = queryForSensor(sensorid)
 
-    if not sensor:
-        print("Warning: Sensor not found with id: ", sensorid)
-        return "Given id for sensor not in database", 400
+    if statuscode == 400:
+        return text, statuscode
 
     datasize = int(json_data['datasize'])
     data_list = json_data['data']
@@ -268,6 +276,29 @@ def getNewValues():
     db.session.commit()
     print(json_answer)
     return json_answer
+
+
+@app.route('/addpredicted', methods=['POST'])
+def addPredictedValues():
+    # getting the predicted ages and genders from edge computing via image captioning
+    json_data = request.get_json()
+
+    text, statuscode, sensor = queryForSensor(int(json_data['sensorid']))
+
+    if statuscode == 400:
+        return text, statuscode
+
+    datasize = int(json_data['datasize'])
+    data_list = json_data['data']
+
+    # Expecting data in the format: {..., data: {'Gender' : 'M', 'Age' : '23'}}
+
+    for i in range(datasize):
+        data_item = data_list[i]
+        gender = data_item['Gender']
+        age = data_item['Age']
+        person = Customer(gender=gender, age=age)
+        person.addToDatabase()
 
 
 if __name__ == '__main__':

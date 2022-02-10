@@ -41,3 +41,15 @@ class Sensorfeed(db.Model):
     def addToDatabase(self):
         db.session.add(self)
         db.session.commit()
+
+
+class Customer(db.Model):
+    __tablename__ = 'customer'
+    id = db.Column('customer', db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    gender = db.Column(db.String, nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+
+    def addToDatabase(self):
+        db.session.add(self)
+        db.session.commit()
