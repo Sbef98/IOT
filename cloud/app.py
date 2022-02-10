@@ -70,6 +70,9 @@ def page_not_found(error):
     return 'Error', 404
 
 
+"""UI Paths"""
+
+
 @app.route('/')
 def overview():
     try:
@@ -122,6 +125,20 @@ def actuating(actuator_id):
     return render_template('actuating.html', actuator=actuator)
 
 
+@app.route('/actuate/<int:actuator_id>', methods=['POST'])
+def actuate(actuator_id):
+    value = request.form['value']
+    # in order to not try to send things to the bridge where no actuator exists
+    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()
+    if not value:
+        flash('Nothing sent as value was empty :(')
+        return render_template('actuating.html', actuator=actuator)
+    actuator.next_value = value
+    db.session.commit()
+    flash('Success: Value will be send to actuator on next update!')
+    return render_template('actuating.html', actuator=actuator)
+
+
 @app.route('/test')
 def test():
     # add initial sensor
@@ -136,6 +153,9 @@ def test():
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+
+"""REST API for Bridge"""
 
 
 @app.route('/initializebridge', methods=['POST'])
@@ -248,20 +268,6 @@ def getNewValues():
     db.session.commit()
     print(json_answer)
     return json_answer
-
-
-@app.route('/actuate/<int:actuator_id>', methods=['POST'])
-def actuate(actuator_id):
-    value = request.form['value']
-    # in order to not try to send things to the bridge where no actuator exists
-    actuator = Actuator.query.filter_by(id=actuator_id).first_or_404()
-    if not value:
-        flash('Nothing sent as value was empty :(')
-        return render_template('actuating.html', actuator=actuator)
-    actuator.next_value = value
-    db.session.commit()
-    flash('Success: Value will be send to actuator on next update!')
-    return render_template('actuating.html', actuator=actuator)
 
 
 if __name__ == '__main__':
