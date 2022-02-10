@@ -3,6 +3,7 @@
 import asyncio
 import time
 
+from bridge.handler.message_handler import SocketHandler
 from bridge.handler.message_management import createActuatorNewValueMessage
 
 """ to see why I used requests and not urllib.request:
@@ -29,13 +30,24 @@ class Bridge:
         self.inbuffer = []
         self.state = "addValueForSensor"
 
+        self.serverInitialized = False  # Useful to run the bridge without cloud running
+
         self.sendInitializeMessageToCloud()
 
     def sendInitializeMessageToCloud(self):
         data_json = {}
         data_json['bridgeid'] = str(self.name)
-        self.sendToCloud('initializebridge', data_json)
-        print("Initialized Bridge")
+
+        try:
+            self.sendToCloud('initializebridge', data_json)
+            print("Initialized Bridge")
+            self.serverInitialized = True
+
+        except requests.exceptions.ConnectionError:
+            print("Cannot initialize Bridge. Connection Error.")
+            self.serverInitialized = False
+
+        return self.serverInitialized
 
     def sendToCloud(self, path, json_data):
         response = requests.post(self.cloud + '/' + path, json=json_data)
@@ -64,6 +76,13 @@ class Bridge:
             data_json['bridgeid'] = str(self.name)
             data_json['actuator_num'] = str(len(self.actuators))
             data_json['actuators'] = [str(actuator) for actuator in self.actuators]
+
+            if not self.serverInitialized:      # If first initialization did not workm, let's try again
+                if not self.sendInitializeMessageToCloud():
+                    print("Can't query for new actuators value if no connection is enstablished first")
+                    print("Assuming Debug Mode, Wanted to query actuators:", data_json)
+                    continue    # Continues the while
+
             response = self.sendToCloud('getNewValues', data_json)
 
             # expecting json like {'actuator_number' : 'actuator_value'}
@@ -83,5 +102,5 @@ class Bridge:
 
 
 if __name__ == '__main__':
-    br = Bridge()
-    br.loop()
+    hand = SocketHandler(None, 8080, "localhost")
+    SocketHandler.loop()
