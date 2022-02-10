@@ -2,6 +2,7 @@
 
 import asyncio
 import time
+from os import environ
 
 from bridge.handler.message_management import createActuatorNewValueMessage
 
@@ -23,7 +24,7 @@ class Bridge:
         token = jwt.encode(
             {'public_id': self.name, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=8)}, 'my-secret')
         use secret from bridge"""
-        self.accessToken = ''
+        self.accessToken = environ['ACCESS-TOKEN']
 
         self.sensors = []
         self.actuators = []
