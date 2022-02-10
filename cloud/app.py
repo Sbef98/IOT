@@ -4,6 +4,8 @@ from flask import Flask, flash, render_template, request   # jsonify, redirect,
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from functools import wraps
+import jwt
 
 from config import Config
 
@@ -40,6 +42,26 @@ def collectBridgeMetrics(devices):
         else:
             bridgedict[device.bridge_id] = 1
     return bridgedict
+
+
+def token_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+
+        token = None
+        if 'x-access-tokens' in request.headers:
+            token = request.headers['x-access-tokens']
+
+        if not token:
+            return {'message': 'a valid token is missing'}
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            data['public_id'] in app.config['BRIDGE_TOKENS']
+        except:
+            return {'message': 'token is invalid'}
+        return f(data['public_id'], *args, **kwargs)
+    return decorator
 
 
 @app.errorhandler(404)
@@ -116,7 +138,8 @@ def about():
 
 
 @app.route('/initializebridge', methods=['POST'])
-def initializeBridge():
+@token_required
+def initializeBridge(token_id):
     # delete all objects saved for this bridge so far since it was turned of in between and will start initializing now
     json_data = request.get_json()
     bridgeid = json_data['bridgeid']
@@ -138,7 +161,8 @@ def initializeBridge():
 
 
 @app.route('/adddevice', methods=['POST'])
-def addDevice():
+@token_required
+def addDevice(token_id):
     json_data = request.get_json()
     device_id = 0
     bridgeid = json_data['bridgeid']
@@ -171,7 +195,8 @@ def addDevice():
 
 
 @app.route('/addvalue', methods=['POST'])
-def addInlist():
+@token_required
+def addInlist(token_id):
     json_data = request.get_json()
 
     bridgeid = int(json_data['bridgeid'])
@@ -194,7 +219,8 @@ def addInlist():
 
 
 @app.route('/getNewValues', methods=['POST'])
-def getNewValues():
+@token_required
+def getNewValues(token_id):
     json_data = request.get_json()
     print(json_data)
 
