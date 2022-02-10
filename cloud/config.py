@@ -34,3 +34,9 @@ class Config:
 
     CACHE_TYPE = "simple"  # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT = 100
+
+    # JWT
+    SECRET_KEY = 'my-secret'
+    BRIDGE_TOKENS = {
+        '1': 'my-token'
+    }
