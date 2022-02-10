@@ -56,12 +56,12 @@ def token_required(f):
             return {'message': 'a valid token is missing'}
 
         try:
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            if not data['public_id'] in app.config['BRIDGE_TOKENS']:
+            data = jwt.decode(token, app.config['TOKEN_SECRET_KEY'], algorithms=["HS256"])
+            if not data['public_id'] in app.config['TOKEN_BRIDGE_IDS']:
                 raise Exception('Public id not in expected tokens')
         except:
             return {'message': 'token is invalid'}
-        return f(data['public_id'], *args, **kwargs)
+        return f()
     return decorator
 
 
@@ -140,7 +140,7 @@ def about():
 
 @app.route('/initializebridge', methods=['POST'])
 @token_required
-def initializeBridge(token_id):
+def initializeBridge():
     # delete all objects saved for this bridge so far since it was turned of in between and will start initializing now
     json_data = request.get_json()
     bridgeid = json_data['bridgeid']
@@ -163,7 +163,7 @@ def initializeBridge(token_id):
 
 @app.route('/adddevice', methods=['POST'])
 @token_required
-def addDevice(token_id):
+def addDevice():
     json_data = request.get_json()
     device_id = 0
     bridgeid = json_data['bridgeid']
@@ -197,7 +197,7 @@ def addDevice(token_id):
 
 @app.route('/addvalue', methods=['POST'])
 @token_required
-def addInlist(token_id):
+def addInlist():
     json_data = request.get_json()
 
     bridgeid = int(json_data['bridgeid'])
@@ -221,7 +221,7 @@ def addInlist(token_id):
 
 @app.route('/getNewValues', methods=['POST'])
 @token_required
-def getNewValues(token_id):
+def getNewValues():
     json_data = request.get_json()
     print(json_data)
 
