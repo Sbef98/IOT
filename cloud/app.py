@@ -57,7 +57,6 @@ def collectBridgeMetrics(devices):
 def getCustomerNumber():
     currentTime = datetime.datetime.utcnow()
     oneHourAgo = currentTime - datetime.timedelta(days=1)
-    #customerNumber = Customer.query.filter_by(Customer.timestamp > oneHourAgo).count()
     customerNumber = db.session.query(Customer).filter(
         Customer.timestamp > oneHourAgo).all().count(Customer.id)
 
