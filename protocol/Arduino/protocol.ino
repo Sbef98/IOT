@@ -18,8 +18,6 @@ void* temperature (unsigned char* return_data_size)
   float temp_hum_val[2] = {0};
 
   if (!dht.readTempAndHumidity(temp_hum_val)) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
     char c[5] = {0};
     dtostrf(temp_hum_val[1], 4, 1, c);
     *return_data_size = 4;
@@ -62,71 +60,7 @@ void* sensor_3 (unsigned char* return_data_size)
   *return_data_size = 0;
 }
 
-void* sensor_4 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_5 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
 void* sensor_6 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_7 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_8 (unsigned char* return_data_size)
 {
   static unsigned long previousMillis = 0;
   static const long interval = 10000;
@@ -157,19 +91,6 @@ void* sensor_9 (unsigned char* return_data_size)
   }
   *return_data_size = 0;
 }
-void* sensor_10 (unsigned char* return_data_size)
-{
-  static char c[] = {'c','i','a','0',0};
-  *return_data_size = strlen("ciao");
-  return c;
-}
-void* sensor_11 (unsigned char* return_data_size)
-{
-  static char c[] = {'w','o','r','r','m','e','l',0};
-  *return_data_size = strlen("soccmel");
-  return c;
-}
-
 
 unsigned char actuator_1 (void* data_received)
 {
@@ -196,11 +117,7 @@ Device devices[] = {
                      /*new_sensor(sensor_1, string_type),
                      new_sensor(sensor_2, string_type),
                      new_sensor(sensor_3, string_type),
-                     new_sensor(sensor_4, string_type),
-                     new_sensor(sensor_5, string_type),
                      new_sensor(sensor_6, string_type),
-                     new_sensor(sensor_7, string_type),
-                     new_sensor(sensor_8, string_type),
                      new_sensor(sensor_9, string_type),*/
                      new_sensor(sensor_9, string_type),
                      new_sensor(sensor_2, string_type),
@@ -218,6 +135,7 @@ void setup() {
    Wire.begin();
    dht.begin();
    pinMode(ledPin, OUTPUT);
+   delay(1000);
 }
 
 void loop() {
