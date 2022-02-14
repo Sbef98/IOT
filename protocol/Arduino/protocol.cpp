@@ -76,7 +76,7 @@ void Message_in_discarded(int buzzer_pin){
   }
 }
 
-void Messa_wrong_datasize(int buzzer_pin){
+void Message_wrong_datasize(int buzzer_pin){
     int melody[] = {
       /*NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4*/NOTE_C1,NOTE_C1
     };
@@ -108,7 +108,7 @@ void send_message(struct Message* m)
   Serial.write(m->flags);
   Serial.write(m->device_id);
   Serial.write(m->data_size);
-  for(char i = 0; i < m -> data_size; i++){
+  for(char i = 0; i < m->data_size; i++){
     Serial.write(((char*) m->data)[i]);
   }
   Serial.write(0xfe);
@@ -259,7 +259,7 @@ enum controller_com_state device_run(Device* d,
   // If we are an initialized sensor, let's send some fresh datas!
   if(d->state == initialized && d->sensor_func != NULL){
     unsigned char data_size;
-    void* data = d->sensor_func(&data_size);
+    char* data = d->sensor_func(&data_size);
     if(data_size > 0){
       struct Message m = {m_no_flags_flag, d->device_id, data_size, data};
       send_message(&m);  
