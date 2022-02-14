@@ -142,15 +142,15 @@ struct Message {
   unsigned char flags;
   unsigned char device_id;
   unsigned char data_size;
-  void* data;
+  char* data;
 };
 
 /*
  * I'm using defines for a metter of commodity and preventing the overhead of a whole function declaration.
  */
-#define new_empty_message(buffer)  {m_no_flags_flag, 0, 0, (buffer)}
+#define new_empty_message(buffer)  {m_no_flags_flag, 0, 0, (char*) (buffer)}
 // A string debug message is useful to send any kind of string value through the serial interface
-#define new_string_debug_message(buffer) {m_debug_flag, 0,(unsigned char) strlen((buffer))+1, (void*) (buffer)}
+#define new_string_debug_message(buffer) {m_debug_flag, 0,(unsigned char) strlen((buffer))+1, (char*) (buffer)}
 
 // These are the results possible when using the function "read_input"
 #define message_done 1        // It read a full message correctly
@@ -175,7 +175,7 @@ typedef void* (*data_collector) (unsigned char* return_data_size);
 typedef unsigned char (*data_eater) (void* data_received);
 
 // A device is anything (sensor, actuator, both of them) managed by the microcontroller in use
-struct device {
+struct Device {
 	data_collector sensor_func; // The function for the sensors
 	data_eater actuator_func;   // The function for the actuators
 	device_state state;         // The state of the device right now
@@ -183,7 +183,7 @@ struct device {
   char* datatype;             // The data type sensed/utilized by the device
 };
 
-#define Device struct device  // Just to make it look more like a class when coding eheh
+//#define Device device  // Just to make it look more like a class when coding eheh
 
 // Some defines to build a device/sensor/actuator more intuitively. A device implements both a sensing and an actuating function!
 #define new_device(sensor_func, actuator_func, datatype) {(sensor_func), (actuator_func), not_initialized, 0, (datatype)}
