@@ -1,4 +1,4 @@
-import types
+import types, pickle
 
 
 def emptyProtocolInBuffer():
@@ -22,10 +22,11 @@ class ProtocolValsIterator:
 
 class ProtocolBuffer:
 
-    def __init__(self, beginTrigger=b'\xff', endTrigger=b'\xfe'):
+    def __init__(self, beginTrigger=b'\xff', endTrigger=b'\xfe', word_dimension = 1):
         self.inBuffer = emptyProtocolInBuffer()
         self.beginTrigger = beginTrigger
         self.endTrigger = endTrigger
+        self.word_dimension = 1
 
     def readChar(self, val):
         """
@@ -97,6 +98,9 @@ class ProtocolBuffer:
                 self.inBuffer.flags += 128
             else:
                 return
+    
+    def getFlags(self):
+        return self.inBuffer.flags
 
     def isInitializationMessage(self):
         if self.inBuffer.flags & (1 << 7) == 128:
@@ -163,6 +167,7 @@ class ProtocolBuffer:
                 if debug:
                     print("Wrong character for:", i, self.inBuffer.data[i])
         return message
+    
 
     def flushBuffer(self):
         self.inBuffer = emptyProtocolInBuffer()
@@ -182,6 +187,27 @@ class ProtocolBuffer:
             return False, "incorrectDataLength"
 
         return True
+    
+    # def toBytes(self):
+    #     byte_beginning = pickle.dumps(self.beginTrigger)
+    #     byte_ending = pickle.dumps(self.endTrigger)
+
+    #     byte_data = None
+    #     if(self.getDataSize > 0):
+    #         i = 0
+    #         for val in self:
+    #             if i == 0:
+    #                 byte_data = pickle.dumps(val)
+    #             byte_data.extend(pickle.dumps(val))
+    #             i += 1
+    #     if byte_data == None:
+    #         byte_data = pickle.dumps(0)
+
+    #     byte_flags = pickle.dumps(self.inBuffer.flags)
+    #     byte_data_length = pickle.dumps(self.getDataSize)
+    #     byte_device_id = pickle.dumps(self.getDeviceId)
+
+    #     return byte_beginning.extend(byte_ending).extend(byte_data).extend(byte_flags).extend(byte_data_length).extend(byte_device_id)
 
     def toString(self):
         message = "Flags active: \n\r"

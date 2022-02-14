@@ -103,7 +103,7 @@ class CommunicationHandler:
 
         for i in range(datasize):
             try:
-                val = int.from_bytes(self.inbuffer.getValue(i), byteorder='little')
+                val = self.inbuffer.getValue(i)
                 currentData.addValue(val)
                 strval = "Sensor %d: %d " % (sensorID, val)
                 print(strval)

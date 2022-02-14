@@ -1,4 +1,7 @@
+from copyreg import pickle
 from socket import socket
+
+from bridge.data.protocol import ProtocolBuffer
 
 
 def newBuffer():
@@ -11,15 +14,13 @@ def newBuffer():
 
 class SocketCom:
     """
-    SocketCom is the single socket communication
+    SocketCom abstract
     """
     @staticmethod
     def getIstance(remoteServer, port, isActuator=False, beginTrigger=b'\xff', endTrigger=b'\xfe'):
-        s = SocketCom(remoteServer, port, beginTrigger, endTrigger)
-        s.outBuffer.setActuatorFlag(isActuator)
-        return s, -1
-
-    def connectToHost(self, remoteServer, port):
+        pass
+    @staticmethod
+    def connectToHost(remoteServer, port):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCKET_STREAM)
         except socket.error:
@@ -32,9 +33,31 @@ class SocketCom:
     def __init__(self, remoteServer, port, beginTrigger=b'\xff', endTrigger=b'\xfe'):
         self.beginTrigger = beginTrigger
         self.endTrigger = endTrigger
-        self.s = self.connectToHost(remoteServer, port)
+        self.s = SocketCom.connectToHost(remoteServer, port)
         self.alive = True
-        self.buffers = newBuffer()
+        self.buffers = None  # Single object for single socket, list for multi one
+    
+    def sendData(self, data, device_id):
+        pass
+    
+    def readNewData(self, device_id):
+        pass
+
+    def initializeDevice(self, device_id, dataType):
+        pass
+
+    def sendInitializationMessage(self, buffer):
+        if not buffer.isInitializationMessage():
+            buffer.setInitializationFlag(True)
+        self.s.sendall(pickle.dumps(buffer.beginTrigger))
+        self.s.sendall(pickle.dumps(buffer.getFlags))
+
+        self.s.sendall(pickle.dumps(buffer.endTrigger))
+    def readInitializationMessage(self):
+        pass
+
+
+
 
 
 class AsyncSocketCom(SocketCom):
@@ -70,10 +93,36 @@ class AsyncSocketCom(SocketCom):
         super().__init__(remoteServer, port, beginTrigger, endTrigger)
         self.buffers = [self.buffers]   # turning the previously single istance into a list
 
+class SingleSocketCom(SocketCom):
+    """
+    SocketCom is the single socket communication
+    """
+    @staticmethod
+    def getIstance(remoteServer, port, isActuator=False, beginTrigger=b'\xff', endTrigger=b'\xfe'):
+        s = SocketCom(remoteServer, port, beginTrigger, endTrigger)
+        s.outBuffer.setActuatorFlag(isActuator)
+        return s, -1
+
+    def connectToHost(self, remoteServer, port):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCKET_STREAM)
+        except socket.error:
+            print("Failed to create socket")
+            return None
+
+        s.connect((remoteServer, port))
+        return s
+
+    def __init__(self, remoteServer, port, beginTrigger=b'\xff', endTrigger=b'\xfe'):
+        self.beginTrigger = beginTrigger
+        self.endTrigger = endTrigger
+        self.s = self.connectToHost(remoteServer, port)
+        self.alive = True
+        self.buffers = newBuffer()
+
 
 class SocketFactory:
-    """
-    """
+
     def garbageCollector(self):
         """
         Will use this to clean the broken connections
@@ -90,3 +139,17 @@ class SocketFactory:
         # The first port in the porta range will be kept for an eventual async Socket
         self.nextActivePort = portRange[0] + 1
         self.inactivePorts = []
+
+    def initSocket(self, multiMode = True, beginTrigger=b'\xff', endTrigger=b'\xfe'):
+        """
+        Returns a SocketCom either way.
+        The AsyncSocketCome is a SocketCom subclass anyway!
+        """
+        if multiMode:
+            AsyncSocketCom.getIstance(self.remoteServer, self.portRange[0], beginTrigger, endTrigger)
+        if not multiMode:
+            SocketCom.getIstance(self.remoteServer, self.portRange[0], beginTrigger, endTrigger)
+
+
+if __name__ == "__main__":
+    pass
