@@ -262,7 +262,7 @@ enum controller_com_state device_run(Device* d,
     char* data = d->sensor_func(&data_size);
     if(data_size > 0){
       struct Message m = {m_no_flags_flag, d->device_id, data_size, data};
-      send_message(&m);  
+      send_message(&m);
     }  
   }
 
