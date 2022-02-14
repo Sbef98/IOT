@@ -98,7 +98,7 @@ class CommunicationHandler:
         sensorID = self.inbuffer.getDeviceId()
         currentData = DataSet(sensorID)
 
-        datasize = self.inbuffer.getDataSize() - 1
+        datasize = self.inbuffer.getDataSize()
 
         for i in range(datasize):
             try:
