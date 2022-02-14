@@ -113,7 +113,7 @@ class CommunicationHandler:
         data_json = currentData.getJSON(self.bridge.name)
 
         if not self.debug:
-            response = self.bridge.sendToCloud('/addvalue', json=data_json)
+            response = self.bridge.sendToCloud('/addvalue', data_json)
             if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
         else:

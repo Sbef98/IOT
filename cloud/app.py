@@ -288,7 +288,7 @@ def getNewValues():
         else:
             value = "2"
         actuator.last_value = str(value)
-        json_answer[str(actuator.id)] = value
+        json_answer[str(actuator.local_id)] = value
 
     db.session.commit()
     print(json_answer)
