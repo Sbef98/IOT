@@ -27,8 +27,8 @@ from models import Sensor, Sensorfeed, Actuator, Customer
 from customerlogic import getCustomerNumberInTimeInterval
 
 
-def queryForSensor(sensorid):
-    sensor = Sensor.query.get(sensorid)
+def queryForSensor(sensorid, bridgeid):
+    sensor = Sensor.query.filter_by(local_id=sensorid, bridge_id=bridgeid).first_or_404()
 
     if not sensor:
         print("Warning: Sensor not found with id: ", sensorid)
@@ -248,7 +248,7 @@ def addInlist():
 
     bridgeid = int(json_data['bridgeid'])
     sensorid = int(json_data['sensorid'])
-    text, statuscode, sensor = queryForSensor(sensorid)
+    text, statuscode, sensor = queryForSensor(sensorid, bridgeid)
 
     if statuscode == 400:
         return text, statuscode
