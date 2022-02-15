@@ -253,13 +253,11 @@ def addInlist():
     if statuscode == 400:
         return text, statuscode
 
-    datasize = int(json_data['datasize'])
-    data_list = json_data['data']
+    data = json_data['data']
 
-    for i in range(datasize):
-        sf = Sensorfeed(sensor_id=sensor.id, value=data_list[i])
-        sf.addToDatabase()
-        print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data_list[i])
+    sf = Sensorfeed(sensor_id=sensor.id, value=data)
+    sf.addToDatabase()
+    print("for bridge: ", bridgeid, "and for sensor: ", sensorid, "added value: ", data)
 
     return str(0)    # function must return something that is not an integer
 
