@@ -1,6 +1,7 @@
 
 import csv
 import datetime
+import os
 
 import numpy as np
 
@@ -9,7 +10,7 @@ from pyimagesearch.centroidtracker import CentroidTracker
 from summary import summary
 from os import path
 
-from socket_send import sendToBridge
+from bridge.bridge import Bridge
 
 # from picamera.array import PiRGBArray
 # from picamera import PiCamera
@@ -86,6 +87,19 @@ print("[Info]: Model Deployed . . .")
 # Starting Video Stream
 
 print("[Info]: Starting Video Stream . . .")
+
+bridge = Bridge(serial=False)
+bridge.name = 2
+bridge.accessToken = os.environ['ACCESS_TOKEN']
+bridge.initialize()
+
+data_json = {}
+data_json['bridgeid'] = str(bridge.name)
+
+data_json['sensor'] = "True"
+
+data_json['datatype'] = 'prediction'
+deviceid = int(bridge.sendToCloud('adddevice', data_json).content)
 
 
 while True:
@@ -196,7 +210,18 @@ while True:
                     writer = csv.writer(file)
                     writer.writerow(data)
 
-                sendToBridge(1, person, gender, age)
+                json_data = {}
+                json_data['bridgeid'] = bridge.name
+                json_data['sensorid'] = deviceid
+
+                data = {}
+                data['Gender'] = 'M' if gender == 'Male' else 'F'
+                data['Age'] = age
+
+                json_data['data'] = data
+                print(json_data)
+                response = bridge.sendToCloud('addpredicted', json_data)
+                print(response.content)
 
             # To make sure a new face is detected
             if objectID > person:
