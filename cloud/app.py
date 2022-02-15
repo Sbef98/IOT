@@ -24,7 +24,7 @@ migrate = Migrate()
 migrate.init_app(app, db)
 
 from models import Sensor, Sensorfeed, Actuator, Customer
-from customerlogic import getCustomerNumberInTimeInterval
+from customerlogic import getCustomerNumberInTimeInterval, getCurrentMainAgeAndGender
 
 
 def queryForSensor(sensorid, bridgeid):
@@ -277,10 +277,17 @@ def getNewValues():
     json_answer = {}
     print("number of actuators:", actuator_number)
 
+    age, gender = getCurrentMainAgeAndGender()
+
     for i in range(actuator_number):
         actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_id=actuator_list[i]).first_or_404()
         if actuator.datatype == 'heater':
-            value = "1"
+            tempSensor = Sensor.query.filter_by(datatype='temperature').first_or_404()
+            tempSensorFeed = Sensorfeed.query.filter_by(sensor_id=tempSensor.id).first_or_404()
+            if float(tempSensorFeed.value) < 20 and gender == 'F':
+                value = "1"
+            else:
+                value = "0"
         elif actuator.next_value != "None":
             value = actuator.next_value
             actuator.next_value = "None"
