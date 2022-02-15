@@ -102,11 +102,12 @@ class CommunicationHandler:
 
         for i in range(datasize):
             try:
-                val = int.from_bytes(self.inbuffer.getValue(i), byteorder='little')
+                val = (self.inbuffer.getValue(i)).decode("ascii")
                 currentData.addValue(val)
-                strval = "Sensor %d: %d " % (sensorID, val)
+                strval = "Sensor " + str(sensorID) + " : " + val
                 print(strval)
-            except:
+            except BaseException as e:
+                print(e)
                 print("Datasize not matching")
 
         # send the read data as json to the cloud

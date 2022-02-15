@@ -15,6 +15,6 @@ class DataSet():
         data = {}
         data['bridgeid'] = str(bridge_name)
         data['sensorid'] = str(self.sensorid)
-        data['datasize'] = str(self.datasize())
-        data['data'] = [str(datapoint) for datapoint in self.data]
+        data['datasize'] = 1
+        data['data'] = ''.join(self.data)
         return data
