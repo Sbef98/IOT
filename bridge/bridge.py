@@ -16,7 +16,7 @@ from bridge.handler import SerialHandler
 
 class Bridge:
 
-    def __init__(self):
+    def __init__(self, serial=True):
         self.debug = False
         self.name = 1  # Change when using a new bridge!
         self.cloud = 'http://127.0.0.1:5000'
@@ -29,12 +29,13 @@ class Bridge:
         self.sensors = []
         self.actuators = []
 
-        self.serialHandler = SerialHandler(self)
+        if serial:
+            self.serialHandler = SerialHandler(self)
 
         # internal input buffer for serial
         self.inbuffer = []
-        self.state = "addValueForSensor"
 
+    def initialize(self):
         self.sendInitializeMessageToCloud()
 
     def sendInitializeMessageToCloud(self):
@@ -93,4 +94,5 @@ class Bridge:
 
 if __name__ == '__main__':
     br = Bridge()
+    br.initialize()
     br.loop()
