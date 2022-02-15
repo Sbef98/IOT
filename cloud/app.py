@@ -278,11 +278,11 @@ def getNewValues():
 
     for i in range(actuator_number):
         actuator = Actuator.query.filter_by(bridge_id=bridgeid, local_id=actuator_list[i]).first_or_404()
-        if actuator.next_value == "None":
+        if actuator.datatype == 'heater':
+            value = "1"
+        elif actuator.next_value != "None":
             value = actuator.next_value
             actuator.next_value = "None"
-        elif actuator.datatype == 'string':
-            value = "hello"
         else:
             value = "2"
         actuator.last_value = str(value)

@@ -85,7 +85,7 @@ class Bridge:
             for actuator in actuators:
                 value = actuators[actuator]
                 data = createActuatorNewValueMessage(actuator, value)
-                self.ser.write(data)
+                self.serialHandler.write(data)
 
                 print("Sent actuator: ", actuator, "value: ", value)
                 time.sleep(5)
