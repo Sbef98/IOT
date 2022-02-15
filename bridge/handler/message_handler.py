@@ -43,15 +43,12 @@ class CommunicationHandler:
 
         if self.inbuffer.isInitializationMessage():     # check whether first bit of flags is set
             if self.inbuffer.isActuatorMessage():
-                self.state = "newActuator"
                 print("Initialize Actuator")
                 self.initializeDevice(sensor=False)
             else:
-                self.state = "newSensor"
                 print("Initialize Sensor")
                 self.initializeDevice(sensor=True)
         else:
-            self.state = "addValueForSensor"
             print("Add Value for Sensor")
             self.addValueForSensor()
 
