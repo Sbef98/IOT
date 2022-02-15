@@ -103,17 +103,18 @@ class CommunicationHandler:
         for i in range(datasize):
             try:
                 val = (self.inbuffer.getValue(i)).decode("ascii")
+                if val == '\x00':
+                    break
                 currentData.addValue(val)
-                strval = "Sensor " + str(sensorID) + " : " + val
-                print(strval)
             except BaseException as e:
                 print(e)
                 print("Datasize not matching")
 
         # send the read data as json to the cloud
         data_json = currentData.getJSON(self.bridge.name)
+        print(data_json)
 
-        if not self.debug:
+        if not self.debug and currentData.data:
             response = self.bridge.sendToCloud('/addvalue', data_json)
             if not response.ok:
                 print("Something went wrong uploading the data. See statuscode " + response.reason)
