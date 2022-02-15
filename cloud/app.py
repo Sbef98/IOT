@@ -190,6 +190,7 @@ def initializeBridge():
     # delete all objects saved for this bridge so far since it was turned of in between and will start initializing now
     json_data = request.get_json()
     bridgeid = json_data['bridgeid']
+    print(bridgeid)
 
     # TODO: change database that all associated sensorfeeds to the deleted sensors also get deleted
 
@@ -317,6 +318,7 @@ def addPredictedValues():
     person.addToDatabase()
 
     return str(0)
+
 
 if __name__ == '__main__':
     app.run()
