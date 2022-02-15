@@ -6,9 +6,7 @@
 #define DHTPIN 2     // what pin we're connected to（DHT10 and DHT20 don't need define it）
 DHT dht(DHTPIN, DHTTYPE);
 
-int ledState = LOW;
-int ledPin = 4;
-
+//////////////// Sensor functions ////////////////////////////////////////////////7
 int temperature (char* data_buffer)
 {
   // needs https://github.com/Seeed-Studio/Grove_Temperature_And_Humidity_Sensor library
@@ -42,19 +40,18 @@ int light_sensor (char* data_buffer)
   return used_data_size;
 }
 
-unsigned char actuator_1 (void* data_received)
+unsigned char symbolic_heating (void* data_received)
 {
-  //send_debug_string("hello");
-  ledState = !ledState;
-  digitalWrite(ledPin,ledState);
+  // data_received should be 0 for off or 1 for on
+  int ledState = data_received ? HIGH : LOW;
+  digitalWrite(3,ledState);
   return 0;
 }
 
 unsigned char actuator_2 (void* data_received)
 {
-  //send_debug_string("hello");
-  ledState = !ledState;
-  digitalWrite(ledPin,ledState);
+  //ledState = !ledState;
+  //digitalWrite(7,ledState);
   return 0;
 }
 //////////////////////// GLOBAL VARS //////////////////////////////
@@ -62,12 +59,13 @@ char string_type[] = {'s','t','r','i','n','g',0};
 char temp_type[] = {'t', 'e', 'm', 'p', 'e', 'r', 'a', 't', 'u', 'r', 'e', 0};
 char humidity_type[] = {'h', 'u', 'm', 'i', 'd', 'i', 't', 'y', 0};
 char light_type[] = {'l', 'i', 'g', 'h', 't', 0};
+char heater_type[] = {'h', 'e', 'a', 't', 'e', 'r', 0};
 
 Device devices[] = {
                      new_sensor(humidity, humidity_type),
                      new_sensor(temperature, temp_type),
                      new_sensor(light_sensor, light_type),
-                     new_actuator(actuator_1, string_type),
+                     new_actuator(symbolic_heating, heater_type),
                      //new_actuator(actuator_2, string_type),
                      //new_actuator(actuator_1, string_type),
                      //new_sensor(sensor_3, string_type),
@@ -83,8 +81,9 @@ void setup() {
 
    // for light sensor
    pinMode(A0, INPUT);
-   
-   pinMode(ledPin, OUTPUT);
+
+   // symbolic heating
+   pinMode(3, OUTPUT);
    delay(1000);
 }
 
