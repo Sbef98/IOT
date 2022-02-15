@@ -294,28 +294,29 @@ def getNewValues():
 
 
 @app.route('/addpredicted', methods=['POST'])
+@token_required
 def addPredictedValues():
     # getting the predicted ages and genders from edge computing via image captioning
     json_data = request.get_json()
+    bridgeid = json_data['bridgeid']
 
-    text, statuscode, sensor = queryForSensor(int(json_data['sensorid']))
+    text, statuscode, sensor = queryForSensor(int(json_data['sensorid']), bridgeid)
 
     if statuscode == 400:
         return text, statuscode
 
-    datasize = int(json_data['datasize'])
     data_list = json_data['data']
 
     # Expecting data in the format: {..., data: {'Gender' : 'M', 'Age' : '(23, 32)'}}
 
-    for i in range(datasize):
-        data_item = data_list[i]
-        gender = data_item['Gender']
-        age_tuple = literal_eval(data_item['Age'])
-        age = (age_tuple[0] + age_tuple[1]) / 2
-        person = Customer(gender=gender, age=age)
-        person.addToDatabase()
+    print(data_list)
+    gender = data_list['Gender']
+    age_tuple = literal_eval(data_list['Age'])
+    age = (age_tuple[0] + age_tuple[1]) / 2
+    person = Customer(gender=gender, age=age)
+    person.addToDatabase()
 
+    return str(0)
 
 if __name__ == '__main__':
     app.run()
