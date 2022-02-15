@@ -216,7 +216,7 @@ class SerialHandler(CommunicationHandler):
         try:
             if self.portname:
                 print("Portname:" + self.portname)
-                self.ser = serial.Serial(self.portname)
+                self.ser = serial.Serial(self.portname, baudrate=9600)
                 print("self.ser:" + self.ser.name)
         except:
             self.ser = None
