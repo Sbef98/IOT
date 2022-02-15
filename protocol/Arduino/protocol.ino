@@ -15,8 +15,8 @@ int temperature (char* data_buffer)
   float temp_hum_val[2] = {0};
   int used_data_size = 0;
   if (!dht.readTempAndHumidity(temp_hum_val)) {
-    dtostrf(temp_hum_val[1], 4, 1, data_buffer);
     used_data_size = 4;
+    dtostrf(temp_hum_val[1], used_data_size, 1, data_buffer);
   }
   return used_data_size;
 }
@@ -27,74 +27,19 @@ int humidity (char* data_buffer)
   float temp_hum_val[2] = {0};
   int used_data_size = 0;
   if (!dht.readTempAndHumidity(temp_hum_val)) {
-    dtostrf(temp_hum_val[0], 4, 1, data_buffer);
     used_data_size = 4;
+    dtostrf(temp_hum_val[0], used_data_size, 1, data_buffer);
   }
   return used_data_size;
 }
 
-void* sensor_2 (unsigned char* return_data_size)
+
+int light_sensor (char* data_buffer)
 {
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'h','e','l','l','o',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_3 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_6 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
-}
-
-void* sensor_9 (unsigned char* return_data_size)
-{
-  static unsigned long previousMillis = 0;
-  static const long interval = 10000;
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-    char c[] = {'s','o','c','c','m','e','l',0};
-    *return_data_size = strlen("soccmel");
-    return c;
-  }
-  *return_data_size = 0;
+  float value = analogRead(A0);
+  int used_data_size = 3;
+  dtostrf(value, used_data_size, 1, data_buffer);
+  return used_data_size;
 }
 
 unsigned char actuator_1 (void* data_received)
@@ -116,18 +61,12 @@ unsigned char actuator_2 (void* data_received)
 char string_type[] = {'s','t','r','i','n','g',0};
 char temp_type[] = {'t', 'e', 'm', 'p', 'e', 'r', 'a', 't', 'u', 'r', 'e', 0};
 char humidity_type[] = {'h', 'u', 'm', 'i', 'd', 'i', 't', 'y', 0};
-//Device s1 = {(sensor_1), NULL, not_initialized, 0, (string_type)};
-//Device s1 = new_sensor(sensor_1, string_type);
-//Device a1 = new_actuator(actuator_1, string_type);
+char light_type[] = {'l', 'i', 'g', 'h', 't', 0};
+
 Device devices[] = {
-                     /*new_sensor(sensor_1, string_type),
-                     new_sensor(sensor_2, string_type),
-                     new_sensor(sensor_3, string_type),
-                     new_sensor(sensor_6, string_type),
-                     new_sensor(sensor_9, string_type),*/
-                     //new_sensor(sensor_9, string_type),
                      new_sensor(humidity, humidity_type),
                      new_sensor(temperature, temp_type),
+                     new_sensor(light_sensor, light_type),
                      new_actuator(actuator_1, string_type),
                      //new_actuator(actuator_2, string_type),
                      //new_actuator(actuator_1, string_type),
@@ -137,9 +76,14 @@ Device devices[] = {
 
 void setup() {
    Serial.begin(9600);
+   
    // for temperature and humidity sensor
    Wire.begin();
    dht.begin();
+
+   // for light sensor
+   pinMode(A0, INPUT);
+   
    pinMode(ledPin, OUTPUT);
    delay(1000);
 }
