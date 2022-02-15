@@ -258,10 +258,12 @@ enum controller_com_state device_run(Device* d,
   }
   // If we are an initialized sensor, let's send some fresh datas!
   if(d->state == initialized && d->sensor_func != NULL){
-    unsigned char data_size;
-    char* data = d->sensor_func(&data_size);
-    if(data_size > 0){
-      struct Message m = {m_no_flags_flag, d->device_id, data_size, data};
+    // Sensors can not send with a precision higher than 5 a value at the moment
+    unsigned char data_size = 5;
+    unsigned char buffer[data_size] = {0};
+    unsigned char used_data_size = (char) d->sensor_func(buffer);
+    if(used_data_size > 0){
+      struct Message m = {m_no_flags_flag, d->device_id, used_data_size, buffer};
       send_message(&m);
     }  
   }
