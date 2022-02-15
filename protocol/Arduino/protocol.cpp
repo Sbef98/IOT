@@ -1,106 +1,6 @@
 #include "protocol.h"
 // checking status // 
 
-void Message_in_started(int buzzer_pin){
-    int melody[] = {
-      NOTE_C4, NOTE_G3//, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
-    };
-    
-    // note durations: 4 = quarter note, 8 = eighth note, etc.:
-    int noteDurations[] = {
-      4, 8//, 8, 4, 4, 4, 4, 4
-    };
-    for (int thisNote = 0; thisNote < 2; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(8, melody[thisNote], noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
-  }
-}
-
-void Message_in_finished(int buzzer_pin){
-    int melody[] = {
-      /*NOTE_C4, NOTE_G3,*/ NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
-    };
-    
-    // note durations: 4 = quarter note, 8 = eighth note, etc.:
-    int noteDurations[] = {
-      4, 8//, 8, 4, 4, 4, 4, 4
-    };
-    for (int thisNote = 0; thisNote < 6; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(8, melody[thisNote], noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
-  }
-}
-
-void Message_in_discarded(int buzzer_pin){
-    int melody[] = {
-      /*NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4*/NOTE_C1,
-    };
-    
-    // note durations: 4 = quarter note, 8 = eighth note, etc.:
-    int noteDurations[] = {
-      2//4, 8//, 8, 4, 4, 4, 4, 4
-    };
-    for (int thisNote = 0; thisNote < 1; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(8, melody[thisNote], noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
-  }
-}
-
-void Message_wrong_datasize(int buzzer_pin){
-    int melody[] = {
-      /*NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4*/NOTE_C1,NOTE_C1
-    };
-    
-    // note durations: 4 = quarter note, 8 = eighth note, etc.:
-    int noteDurations[] = {
-      2,2//4, 8//, 8, 4, 4, 4, 4, 4
-    };
-    for (int thisNote = 0; thisNote < 1; thisNote++) {
-
-    // to calculate the note duration, take one second divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000 / noteDurations[thisNote];
-    tone(8, melody[thisNote], noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
-  }
-}
-
 ////////////////////// FUCTIONS TO MANAGE COMM //////////////////////
 void send_message(struct Message* m)
 {
@@ -141,7 +41,6 @@ char read_input(struct Message* m)
     if(f_m_state != message_begin && input == 0xff){
       f_m_state = message_begin;
       //send_debug_string("A new message started before the previous one finished");
-      Message_in_discarded(8);
       return message_discarded;
     }
 
@@ -150,13 +49,11 @@ char read_input(struct Message* m)
     if(f_m_state == data_reading && input == 0xfe && data_read != m->data_size){
       f_m_state = message_begin;
       //send_debug_string("THe message finished before the reading was finished");
-      Message_wrong_datasize(8);
       return message_discarded;
     }
     
     if(f_m_state == message_begin && input == 0xff){
       f_m_state = flags_read;
-      Message_in_started(8);
       continue;
     }
     
@@ -190,10 +87,8 @@ char read_input(struct Message* m)
     if(f_m_state == message_end && input == 0xfe){
       f_m_state = message_begin;
       if(data_read != m->data_size){
-        Message_in_discarded(8);
         return message_discarded;
       }
-      Message_in_finished(8);
       return message_done;
     }
   }
