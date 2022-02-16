@@ -58,8 +58,14 @@ int light_sensor (char* data_buffer)
 unsigned char symbolic_heating (void* data_received)
 {
   // data_received should be 0 for off or 1 for on
-  int ledState = data_received ? HIGH : LOW;
-  digitalWrite(3,ledState);
+  // compare first part of char pointer
+  if (((char*) data_received)[0] == '\x00'){
+    ledState = LOW;
+  }else {
+    ledState = HIGH;
+  }
+
+  digitalWrite(3, ledState);
   return 0;
 }
 
@@ -104,5 +110,5 @@ void setup() {
 
 void loop() {
 
-  controller_loop(devices, 8);
+  controller_loop(devices, 4);
 }
