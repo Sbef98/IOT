@@ -17,7 +17,18 @@
 		  <input type="submit" class="btn btn-secondary">
 	</form>
 	{% endif %}
-<p></p>
+
+	{% if actuator.datatype == 'heater' %}
+	<p class="text-lg-center font-weight-bold"> Write "0" (zero) in order to turn off the heating and "1" (one) in order to turn it on </p>
+	<script type="text/javascript">console.log('{{actuator.last_value}}')</script>
+	<form method="post" action="{{url_for('actuate', actuator_id=actuator.id)}}" style="margin-left: .5em;">
+		<div class="input-group mx-auto" style="width: 500px">
+		  <input type="string" id="value" name="value" value="{{actuator.last_value}}">
+		  <input type="submit" class="btn btn-secondary">
+		</div>
+	</form>
+	{% endif %}
+
 <form action="{{url_for('actuatorOverview')}}">
 	<button type="submit" class="btn btn-outline-secondary center" style="margin-left: .5em">
 	        Go back to actuator overview
