@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from functools import wraps
 import jwt
+import requests
 
 from config import Config
 
@@ -325,6 +326,17 @@ def addPredictedValues():
     person.addToDatabase()
 
     return str(0)
+
+
+@app.route('/weather', methods=['POST'])
+@token_required
+def weather():
+    api = app.config['OWM_API_KEY']
+
+    response = requests.get('http://api.openweathermap.org/data/2.5/weather?q =' + 'modena' + '&appid =' + api)
+    source = response.content
+    print(source)
+    return source
 
 
 if __name__ == '__main__':

@@ -38,3 +38,5 @@ class Config:
     # JWT
     TOKEN_SECRET_KEY = environ['SECRET_KEY']
     TOKEN_BRIDGE_IDS = environ['BRIDGE_TOKEN_IDs']
+    # OpenWeatherMap
+    OWM_API_KEY = environ['OWM_API_KEY']
